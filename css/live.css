@@ -1,0 +1,251 @@
+/* Projector view (live.html). Designed for 1920×1080 and scaled to any screen: 1rem ≈ 1% of the width
+   (capped by the height for 4:3 or short screens), so at 1920 wide 1rem = 19.2px. Navy background, paper text. */
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  font-size: min(1vw, 1.78vh);
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 100% 0%, rgb(6 250 234 / 0.14), transparent 35%),
+    radial-gradient(circle at 0% 100%, rgb(133 232 133 / 0.12), transparent 35%),
+    var(--navy);
+  color: var(--paper);
+  font-family: var(--font);
+  line-height: 1.25;
+  overflow: hidden;
+}
+h1, h2, p { margin: 0; }
+[hidden] { display: none !important; }
+
+.live {
+  position: relative;
+  height: 100vh;
+  padding: 3rem 3.5rem;
+  display: grid;
+  grid-template-columns: 34fr 66fr;
+  grid-template-rows: auto 1fr;
+  gap: 2.5rem 4rem;
+}
+
+/* Header */
+.live__head {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.live__logo { width: 4.2rem; height: auto; }
+.live__eyebrow {
+  color: var(--green);
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.live__title {
+  color: var(--white);
+  font-size: 3.4rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* Left: the room */
+.live__counts {
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 2rem;
+}
+.live__label {
+  font-size: 2.4rem;
+  font-weight: 600;
+}
+.live__joined {
+  color: var(--white);
+  font-size: 14rem;   /* ≈ 270px at 1920 */
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.live__joined.is-ticking { color: var(--green); transition: color 0.6s ease; }
+.live__bar {
+  height: 1.4rem;
+  margin-top: 1.5rem;
+  border-radius: 999px;
+  background: rgb(241 241 241 / 0.18);
+  overflow: hidden;
+}
+.live__bar-fill {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 0.8s ease;
+}
+.live__split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1.2rem;
+  font-size: 2.6rem;
+}
+.live__split strong {
+  color: var(--white);
+  font-variant-numeric: tabular-nums;
+}
+.live__dot { opacity: 0.6; }
+
+/* Right: the chart */
+.live__chart {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 2rem 2.8rem;
+  border-radius: 2rem;
+  background: rgb(255 255 255 / 0.05);
+  border: 1px solid rgb(241 241 241 / 0.12);
+}
+.live__chart-title {
+  color: var(--white);
+  font-size: 2.8rem;
+  font-weight: 700;
+}
+.live__chart-sub {
+  margin-bottom: 1.2rem;
+  font-size: 1.7rem;
+  opacity: 0.85;
+}
+
+.bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  gap: 0.5rem;
+}
+.bars li {
+  display: grid;
+  grid-template-columns: 2.4rem 17rem 1fr 4.5rem;
+  align-items: center;
+  gap: 1.2rem;
+  font-size: 1.9rem;   /* ≈ 36px at 1920 */
+  line-height: 1.2;
+}
+.bars__rank {
+  font-weight: 700;
+  opacity: 0.7;
+  text-align: right;
+}
+.bars__name {
+  color: var(--white);
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bars__track {
+  display: block;
+  height: 2.2rem;
+  border-radius: 0.7rem;
+  background: rgb(241 241 241 / 0.1);
+  overflow: hidden;
+}
+.bars__fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--green);
+  transition: width 0.8s ease;
+}
+.bars li:first-child .bars__fill { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+.bars__count {
+  color: var(--white);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.live__waiting {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  text-align: center;
+}
+.live__waiting-big {
+  max-width: 36rem;
+  color: var(--white);
+  font-size: 3.4rem;
+  font-weight: 700;
+}
+.live__waiting-left {
+  color: var(--green);
+  font-size: 2.4rem;
+  font-weight: 700;
+}
+
+/* Bottom-left of the left column: join */
+.live__join {
+  position: absolute;
+  left: 3.5rem;
+  bottom: 3rem;
+  display: flex;
+  align-items: center;
+  gap: 1.6rem;
+  font-size: 1.8rem;
+}
+.live__join strong {
+  color: var(--white);
+  font-size: 2.1rem;
+}
+.live__qr {
+  width: 11rem;
+  height: 11rem;
+  padding: 0.5rem;
+  border-radius: 1rem;
+  background: var(--white);
+}
+
+.live__status {
+  position: absolute;
+  right: 3.5rem;
+  bottom: 1.2rem;
+  font-size: 1.3rem;
+  opacity: 0.75;
+}
+.live__status.is-warning {
+  color: var(--pollen); /* yellow is fine on navy */
+  opacity: 1;
+  font-weight: 700;
+}
+
+.live--off {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  font-size: 2rem;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live__bar-fill,
+  .bars__fill,
+  .live__joined.is-ticking { transition: none; }
+}

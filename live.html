@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Live results · Values card sort</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="preload" href="fonts/plus-jakarta-sans-700.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/live.css">
+  <script src="config.js"></script>
+  <script type="module" src="js/live.js"></script>
+</head>
+<body>
+  <!-- Projector view: group counts only, never codes or individual answers. Updates every 5 seconds. -->
+  <div class="live" id="live">
+    <header class="live__head">
+      <img class="live__logo" src="img/logo.png" alt="" width="64" height="61">
+      <div>
+        <p class="live__eyebrow" id="event-name"></p>
+        <h1 class="live__title">What matters most to us?</h1>
+      </div>
+    </header>
+
+    <section class="live__counts" aria-label="People taking part">
+      <p class="live__label">Joined</p>
+      <p class="live__joined" id="joined">0</p>
+      <div class="live__bar" aria-hidden="true"><div class="live__bar-fill" id="progress"></div></div>
+      <p class="live__split">
+        <span><strong id="sorting">0</strong> sorting</span>
+        <span class="live__dot" aria-hidden="true">·</span>
+        <span><strong id="finished">0</strong> finished</span>
+      </p>
+    </section>
+
+    <section class="live__chart" aria-labelledby="chart-title">
+      <h2 class="live__chart-title" id="chart-title">Most chosen values</h2>
+      <p class="live__chart-sub">How many people have each value in their top <span id="top-n">5</span></p>
+      <ol class="bars" id="bars" hidden></ol>
+      <div class="live__waiting" id="waiting">
+        <p class="live__waiting-big">Results appear after <span id="min-n">5</span> people finish</p>
+        <p class="live__waiting-left" id="waiting-left"></p>
+      </div>
+    </section>
+
+    <aside class="live__join" aria-label="How to join">
+      <img class="live__qr" id="qr" alt="QR code to open the card sort" width="200" height="200">
+      <p>Scan, or go to<br><strong id="join-url"></strong></p>
+    </aside>
+
+    <p class="live__status" id="status">Connecting…</p>
+  </div>
+
+  <div class="live live--off" id="off" hidden>
+    <h1 class="live__title">The live view is turned off</h1>
+    <p>Set <code>liveView: true</code> in config.js to use it.</p>
+  </div>
+</body>
+</html>

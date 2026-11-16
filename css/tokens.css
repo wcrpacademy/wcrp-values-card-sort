@@ -1,0 +1,55 @@
+/* WCRP Academy brand tokens (docs/FRONTEND_PLAN.md §2). The brand values are fixed. */
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/plus-jakarta-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/plus-jakarta-sans-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../fonts/plus-jakarta-sans-700.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  /* Brand */
+  --navy: #232C3D;      /* text, header, primary surfaces */
+  --blue: #0069A9;      /* links, secondary buttons */
+  --green: #85E885;     /* main action buttons (navy text), progress, "saved" */
+  --pollen: #F3EA99;    /* "Very important" accent, badges */
+  --cyan: #06FAEA;      /* decoration only */
+  --paper: #F1F1F1;     /* page background */
+  --white: #FFFFFF;     /* cards */
+  --metal: #737D84;     /* borders */
+  --ink-soft: #5E676E;  /* small grey text */
+  --error: #C8102E;     /* error text */
+
+  /* Derived tints: backgrounds only, text on them stays navy */
+  --pollen-tint: #FBF8DC;  /* chosen rows */
+  --blue-tint: #E2EEF6;    /* "Important" accent */
+  --metal-tint: #E3E6E8;   /* "Not important" accent */
+  --green-hover: #6FDC6F;  /* primary button hover (navy text still > 8:1) */
+  --line: #D5D9DC;         /* decorative dividers only; form borders use --metal */
+
+  /* Type */
+  --font: "Plus Jakarta Sans", Arial, sans-serif;
+
+  /* Shape and spacing */
+  --radius-card: 16px;
+  --radius-field: 12px;
+  --radius-pill: 999px;
+  --tap: 48px;
+  --gutter: 16px;
+  --shadow-card: 0 1px 2px rgb(35 44 61 / 0.06), 0 6px 20px rgb(35 44 61 / 0.06);
+}

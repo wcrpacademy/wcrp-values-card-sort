@@ -1,0 +1,95 @@
+# Test, then upload the site to values.wcrp-academy.org (Infomaniak web hosting, over SFTP).
+# Runs on every push to main, or by hand from the Actions tab.
+#
+# Repository secrets (Settings → Secrets and variables → Actions). Values never go in the repo:
+#   SFTP_HOST      Infomaniak SFTP host
+#   SFTP_PORT      usually 22
+#   SFTP_USER      SFTP user for the web hosting
+#   SFTP_PASSWORD  its password
+#   SFTP_PATH      the subdomain's folder on the hosting, e.g. /sites/values.wcrp-academy.org
+# Until SFTP_HOST is set, the deploy job is skipped (tests still run).
+
+name: Test and deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+        env:
+          CI: "1"
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      SFTP_HOST: ${{ secrets.SFTP_HOST }}
+      SFTP_PORT: ${{ secrets.SFTP_PORT }}
+      SFTP_USER: ${{ secrets.SFTP_USER }}
+      LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+      SFTP_PATH: ${{ secrets.SFTP_PATH }}
+    steps:
+      - name: Check the SFTP secrets are set
+        id: secrets
+        run: |
+          if [ -z "$SFTP_HOST" ] || [ -z "$SFTP_USER" ] || [ -z "$LFTP_PASSWORD" ] || [ -z "$SFTP_PATH" ]; then
+            echo "SFTP secrets are not set yet: skipping the upload."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci && npm run qr
+        if: steps.secrets.outputs.ready == 'true'
+
+      # Allowlist: only what the pages load. Never .env, docs, tests, scripts, server.py or apps-script/.
+      - name: Build the upload folder
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          mkdir dist
+          cp index.html live.html admin.html config.js values.json dist/
+          cp -r css js fonts img qr dist/
+          find dist -name '.*' -print -delete
+          echo "Uploading:" && find dist -type f | sort
+
+      - name: Upload over SFTP
+        if: steps.secrets.outputs.ready == 'true'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq lftp
+          lftp -u "$SFTP_USER" --env-password -p "${SFTP_PORT:-22}" "sftp://$SFTP_HOST" -e "
+            set sftp:auto-confirm yes;
+            set net:max-retries 3;
+            mirror --reverse --no-perms --verbose dist/ \"$SFTP_PATH\";
+            bye"

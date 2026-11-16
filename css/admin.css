@@ -1,0 +1,132 @@
+/* Organiser view (admin.html). Builds on tokens.css and app.css. */
+
+.shell--wide { max-width: 56rem; }
+.topbar__inner--wide { max-width: 56rem; }
+.admin__tag {
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: rgb(241 241 241 / 0.12);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.admin code {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: var(--metal-tint);
+  font-size: 0.9em;
+}
+.admin-lock { max-width: 24rem; }
+
+.admin-dash__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.admin-dash__actions {
+  display: flex;
+  gap: 8px;
+}
+.admin-status {
+  margin-top: -8px;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+}
+.admin-status.is-warning {
+  color: var(--error);
+  font-weight: 600;
+}
+
+.tiles {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.tile {
+  padding: 16px;
+  border-radius: var(--radius-card);
+  background: var(--white);
+  box-shadow: var(--shadow-card);
+}
+.tile dt {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.tile dd {
+  margin: 4px 0 0;
+  font-size: clamp(1.75rem, 1.2rem + 3vw, 2.75rem);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.tile--accent { background: var(--navy); color: var(--paper); }
+.tile--accent dt { color: var(--paper); }
+.tile--accent dd { color: var(--green); } /* green on navy is fine */
+
+.admin-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+.admin-card h2 { font-size: 1.25rem; }
+.admin-note { color: var(--ink-soft); }
+
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.counts {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.counts th,
+.counts td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.counts th {
+  color: var(--ink-soft);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.counts td:nth-child(2) { font-weight: 600; }
+.counts .num { text-align: right; }
+.counts tbody tr:nth-child(-n + 5) td:first-child {
+  font-weight: 700;
+}
+.counts .bar {
+  display: block;
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 3px;
+  background: var(--green);
+}
+
+.admin-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.admin-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--tap);
+  color: var(--blue);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
+.admin-links .icon { width: 1.1em; height: 1.1em; }
+
+@media (max-width: 30rem) {
+  .tile { padding: 12px; }
+}

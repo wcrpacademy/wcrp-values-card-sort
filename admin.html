@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Organiser view · Values card sort</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="css/admin.css">
+  <script src="config.js"></script>
+  <script type="module" src="js/admin.js"></script>
+</head>
+<body class="admin">
+  <svg xmlns="http://www.w3.org/2000/svg" hidden>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.5v.01"/></g>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5v-3a4 4 0 0 1 8 0v3"/></g>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 5v6h-6"/></g>
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 24 24">
+      <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 3v12M7 10l5 5 5-5M5 21h14"/>
+    </symbol>
+    <symbol id="i-external" viewBox="0 0 24 24">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g>
+    </symbol>
+  </svg>
+
+  <header class="topbar">
+    <div class="topbar__inner topbar__inner--wide">
+      <span class="brand"><img class="brand__logo" src="img/logo.png" alt="" width="30" height="29">WCRP Academy</span>
+      <span class="admin__tag">Organiser view</span>
+    </div>
+  </header>
+
+  <main class="shell shell--wide">
+    <!-- PIN screen. It only hides this page; the data itself is protected by the Sheet's sharing settings. -->
+    <section class="screen admin-lock" id="lock" hidden aria-labelledby="lock-title">
+      <h1 id="lock-title" tabindex="-1">Organiser view</h1>
+      <p>Enter the organiser PIN to see the group counts.</p>
+      <form class="start-form" id="pin-form" novalidate>
+        <div class="field">
+          <label class="field__label" for="pin">PIN</label>
+          <input class="input input--code" id="pin" name="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="32">
+          <p class="field__error" id="pin-error" hidden>
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
+            <span>That PIN isn't right.</span>
+          </p>
+        </div>
+        <button type="submit" class="btn btn--primary btn--block" id="pin-btn">
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>Unlock
+        </button>
+      </form>
+    </section>
+
+    <section class="screen" id="nopin" hidden aria-labelledby="nopin-title">
+      <h1 id="nopin-title">No PIN set yet</h1>
+      <p>Run <code>npm run pin</code> on the organiser's laptop, then put the hash it prints in <code>adminPinHash</code> in config.js.</p>
+    </section>
+
+    <section class="screen admin-dash" id="dash" hidden aria-labelledby="dash-title">
+      <div class="admin-dash__head">
+        <div class="title-group">
+          <p class="eyebrow" id="event-name"></p>
+          <h1 id="dash-title" tabindex="-1">Group results</h1>
+        </div>
+        <div class="admin-dash__actions">
+          <button type="button" class="btn btn--secondary btn--small" id="refresh-btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-refresh"/></svg>Refresh
+          </button>
+          <button type="button" class="btn btn--secondary btn--small" id="lock-btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-lock"/></svg>Lock
+          </button>
+        </div>
+      </div>
+      <p class="admin-status" id="status" role="status">Loading…</p>
+
+      <dl class="tiles">
+        <div class="tile"><dt>Joined</dt><dd id="t-joined">–</dd></div>
+        <div class="tile"><dt>Sorting now</dt><dd id="t-sorting">–</dd></div>
+        <div class="tile tile--accent"><dt>Finished</dt><dd id="t-finished">–</dd></div>
+      </dl>
+
+      <section class="card admin-card" aria-labelledby="counts-title">
+        <h2 id="counts-title">Values in people's top <span id="top-n">5</span></h2>
+        <p class="admin-note" id="counts-note"></p>
+        <div class="table-wrap" id="table-wrap" hidden>
+          <table class="counts">
+            <thead>
+              <tr><th scope="col">#</th><th scope="col">Value</th><th scope="col" class="num">People</th><th scope="col" class="num">% of finished</th></tr>
+            </thead>
+            <tbody id="counts-body"></tbody>
+          </table>
+        </div>
+        <button type="button" class="btn btn--secondary btn--small" id="csv-btn" hidden>
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download"/></svg>Download these counts (CSV)
+        </button>
+      </section>
+
+      <section class="card admin-card" aria-labelledby="data-title">
+        <h2 id="data-title">All results</h2>
+        <ul class="admin-links" id="data-links" role="list"></ul>
+      </section>
+    </section>
+  </main>
+</body>
+</html>
