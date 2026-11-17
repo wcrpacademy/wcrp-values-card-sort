@@ -82,6 +82,7 @@ test('no internet at the results screen: "Not sent yet", then sent once when bac
 
 test('receiver down: an unsent result survives "Start again" and is sent when the page reopens', async ({ page, request }) => {
   test.skip(test.info().project.name !== 'phone-375', 'once is enough');
+  await allowRetakes(page);
   await jumpTo(page, 'rank');
   await request.post('/__test/outage?on=1');
   await page.getByRole('button', { name: 'See my results' }).click();
@@ -95,6 +96,20 @@ test('receiver down: an unsent result survives "Start again" and is sent when th
   await request.post('/__test/outage?on=0');
   await page.reload(); // reopening the page sends what is waiting
   await expect.poll(async () => (await sheet(request)).results.length).toBe(1);
+});
+
+test('one entry per phone: no "Start again" on Results, and reopening shows the same results', async ({ page, request }) => {
+  test.skip(test.info().project.name !== 'phone-375', 'once is enough');
+  await jumpTo(page, 'rank');
+  await page.getByRole('button', { name: 'See my results' }).click();
+  await expect(page.locator('#save-status-text')).toHaveText('Saved');
+  await expect(page.getByRole('button', { name: 'Start again' })).toBeHidden();
+  await expect(page.getByText('Thanks for taking part. Each phone can send one set of answers.')).toBeVisible();
+
+  await page.reload();
+  await expect(page.locator('[data-screen="results"]')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start again' })).toBeHidden();
+  expect((await sheet(request)).results).toHaveLength(1);
 });
 
 test('French: the flag menu switches the page; the choice is kept; the Sheet still gets English names', async ({ page, request }) => {
@@ -161,3 +176,12 @@ test('header fits at 320 px in both languages (no sideways scroll)', async ({ pa
     }
   }
 });
+
+/** Turns config.oneEntryPerDevice off for this page, so "Start again" is offered on Results. */
+async function allowRetakes(page) {
+  await page.route('**/config.js', async (route) => {
+    const res = await route.fetch();
+    const body = (await res.text()).replace(/oneEntryPerDevice:\s*true/, 'oneEntryPerDevice: false');
+    await route.fulfill({ response: res, body });
+  });
+}

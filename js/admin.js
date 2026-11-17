@@ -76,7 +76,50 @@ function unlock(focus) {
     location.reload();
   });
   $('#csv-btn').addEventListener('click', downloadCsv);
+  wireReset();
   load();
+}
+
+// What "Reset this phone" clears: the session (answers, device ID, the one-entry lock), the tutorial and
+// newsletter flags, so the phone behaves like a new one. Kept: the language choice, and the outbox, so
+// anything not yet sent still reaches the Sheet.
+const PHONE_KEYS = ['wcrp-cardsort-v1', 'wcrp-cardsort-tutorial-seen', 'wcrp-cardsort-newsletter-done'];
+
+function wireReset() {
+  const btn = $('#reset-btn');
+  const box = $('#reset-confirm');
+  const done = $('#reset-done');
+  btn.addEventListener('click', () => {
+    btn.hidden = true;
+    box.hidden = false;
+    done.textContent = '';
+    $('#reset-no').focus();
+  });
+  $('#reset-no').addEventListener('click', () => {
+    box.hidden = true;
+    btn.hidden = false;
+    btn.focus();
+  });
+  $('#reset-yes').addEventListener('click', () => {
+    let ok = true;
+    try {
+      PHONE_KEYS.forEach((k) => localStorage.removeItem(k));
+    } catch {
+      ok = false;
+    }
+    box.hidden = true;
+    btn.hidden = false;
+    btn.focus();
+    done.replaceChildren();
+    if (!ok) {
+      done.textContent = "Couldn't reset: this browser blocks site storage.";
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = './';
+    link.textContent = 'Open the card sort';
+    done.append('This phone was reset. ', link, ' to take part again.');
+  });
 }
 
 async function load() {

@@ -105,6 +105,7 @@ window.CARD_SORT_CONFIG = {
 | `topN` | 5 / 10 | How many top values they pick and rank. |
 | `valuesList` | full / trimmed | 83 cards or the shorter list. |
 | `languages` | `["en", "fr"]` / `["en"]` | A flag menu in the header switches the participant page between English and French. It starts in the phone's language and remembers the choice. |
+| `oneEntryPerDevice` | `true` / `false` | `true` (default, Ken 17 Nov): once someone reaches Results, "Start again" is replaced by "Thanks for taking part. Each phone can send one set of answers." and reopening the page shows their results again. "Start over" mid-sort still works. Remembered on the phone only, so a private tab or another browser can still send a second set; nothing stronger is possible without identifying people. `false` brings "Start again" back (for testing). |
 
 The start screen's consent line changes with `idMode`, so it always says honestly what is stored.
 

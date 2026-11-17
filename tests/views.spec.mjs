@@ -1,6 +1,6 @@
 // Live view (projector), admin view and the newsletter form.
 import { test, expect } from '@playwright/test';
-import { sheet, resetSheet, watchExternal } from './helpers.mjs';
+import { sheet, resetSheet, watchExternal, jumpTo } from './helpers.mjs';
 
 test.beforeEach(async ({ request }) => {
   await resetSheet(request);
@@ -63,6 +63,27 @@ test.describe('live view', () => {
 });
 
 test.describe('admin view', () => {
+  test('"Reset this phone" lets a finished phone take part again', async ({ page }) => {
+    await jumpTo(page, 'rank');
+    await page.getByRole('button', { name: 'See my results' }).click();
+    await expect(page.locator('#save-status-text')).toHaveText('Saved');
+    await expect(page.getByRole('button', { name: 'Start again' })).toBeHidden();
+
+    await page.goto('/admin.html');
+    await page.getByLabel('PIN', { exact: true }).fill('1234');
+    await page.getByRole('button', { name: 'Unlock' }).click();
+    await page.getByRole('button', { name: 'Reset this phone' }).click();
+    await page.getByRole('button', { name: 'Cancel' }).click();
+    await page.getByRole('button', { name: 'Reset this phone' }).click();
+    await page.getByRole('button', { name: 'Yes, reset this phone' }).click();
+    await expect(page.locator('#reset-done')).toHaveText('This phone was reset. Open the card sort to take part again.');
+    expect(await page.evaluate(() => localStorage.getItem('wcrp-cardsort-v1'))).toBeNull();
+
+    await page.getByRole('link', { name: 'Open the card sort' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'What matters most to you?' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start sorting' })).toBeVisible();
+  });
+
   test('wrong PIN is refused; right PIN shows counts; Lock hides them again', async ({ page, request }) => {
     await request.post('/__test/seed?n=7');
     await page.goto('/admin.html');

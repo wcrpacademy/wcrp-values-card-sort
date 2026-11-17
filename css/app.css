@@ -1395,6 +1395,12 @@ body.is-dragging-card .pile-btn { border-style: dashed; }
   display: flex;
   flex-direction: column;
 }
+.restart-done {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
+  text-align: center;
+}
 .credit {
   color: var(--ink-soft);
   font-size: 0.875rem;

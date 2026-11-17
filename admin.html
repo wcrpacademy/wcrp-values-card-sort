@@ -107,6 +107,21 @@
         <h2 id="data-title">All results</h2>
         <ul class="admin-links" id="data-links" role="list"></ul>
       </section>
+
+      <!-- Testing: clears the card sort saved in THIS browser only (same site, same storage). -->
+      <section class="card admin-card" aria-labelledby="phone-title">
+        <h2 id="phone-title">Reset this phone (for testing)</h2>
+        <p class="admin-note">Each phone can send one set of answers. To test again on this phone, reset it here: the card sort forgets this phone's answers and it counts as a new phone. Other phones and the Sheet are not changed, so delete your test rows in the Sheet as well.</p>
+        <button type="button" class="btn btn--danger btn--small" id="reset-btn">Reset this phone</button>
+        <div class="confirm" id="reset-confirm" role="group" aria-labelledby="reset-q" hidden>
+          <p class="confirm__q" id="reset-q">Reset this phone? Its answers in this browser are cleared.</p>
+          <div class="confirm__actions">
+            <button type="button" class="btn btn--danger" id="reset-yes">Yes, reset this phone</button>
+            <button type="button" class="btn btn--secondary" id="reset-no">Cancel</button>
+          </div>
+        </div>
+        <p class="admin-note" id="reset-done" role="status"></p>
+      </section>
     </section>
   </main>
 </body>

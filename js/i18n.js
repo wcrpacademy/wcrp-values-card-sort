@@ -124,6 +124,7 @@ const STRINGS = {
     'restart.againYes': 'Yes, start again',
     'restart.cancel': 'Cancel',
     'restart.cleared': 'Your answers on this phone were cleared.',
+    'restart.done': 'Thanks for taking part. Each phone can send one set of answers.',
 
     'tutorial.title': 'How to sort',
     'tutorial.drag': 'Drag the card onto a pile, or just tap a pile.',
@@ -296,6 +297,7 @@ const STRINGS = {
     'restart.againYes': 'Oui, refaire l’activité',
     'restart.cancel': 'Annuler',
     'restart.cleared': 'Vos réponses sur ce téléphone ont été effacées.',
+    'restart.done': 'Merci de votre participation. Chaque téléphone peut envoyer une seule série de réponses.',
 
     'tutorial.title': 'Comment trier',
     'tutorial.drag': 'Faites glisser la carte sur une pile, ou touchez simplement une pile.',

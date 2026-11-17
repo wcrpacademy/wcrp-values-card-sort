@@ -878,9 +878,13 @@ function setSaveStatus(kind) {
 
 // ---------- Start over / Start again ----------
 
+/** One set of answers per phone (config.oneEntryPerDevice): no "Start again" once on Results. */
+const entryLocked = () => state.step === 'results' && cfg.oneEntryPerDevice !== false;
+
 function renderRestart({ keepOpen = false } = {}) {
   const which = state.step === 'results' ? 'again' : 'over';
-  $('#restart').hidden = state.step === 'start';
+  $('#restart').hidden = state.step === 'start' || entryLocked();
+  $('#restart-done').hidden = !entryLocked();
   if (!keepOpen) {
     $('#restart-btn').hidden = false;
     $('#restart-confirm').hidden = true;
@@ -904,6 +908,7 @@ function wireRestart() {
     btn.focus();
   });
   $('#restart-yes').addEventListener('click', () => {
+    if (entryLocked()) return;
     state = resetState(state, cfg); // keeps the device ID, so the Joined counter doesn't count twice
     $('#start-lost').hidden = true;
     go('start');

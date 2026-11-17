@@ -21,5 +21,6 @@ window.CARD_SORT_CONFIG = {
   sheetUrl: "",               // admin view: link to the Google Sheet (the Sheet stays private; this is only a shortcut)
   listVersion: "miller-2001-v1",
   newsletterSignup: true,     // "Join the newsletter" form on Start and Results (needs the Apps Script + MailerLite key); false hides it
+  oneEntryPerDevice: true,    // after finishing, "Start again" is gone: one set of answers per phone. false allows retakes (testing)
   adminPinHash: ""            // SHA-256 hex of the admin PIN (never the PIN itself)
 };

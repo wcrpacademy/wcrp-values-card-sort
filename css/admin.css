@@ -74,6 +74,11 @@
 }
 .admin-card h2 { font-size: 1.25rem; }
 .admin-note { color: var(--ink-soft); }
+.admin-note a {
+  color: var(--blue);
+  font-weight: 600;
+  text-underline-offset: 3px;
+}
 
 .table-wrap {
   width: 100%;
