@@ -59,7 +59,8 @@ jobs:
       - name: Check the SFTP secrets are set
         id: secrets
         run: |
-          clean() { printf '%s' "$1" | tr -d '\r\n' | sed -E "s/^[[:space:]\"']+//; s/[[:space:]\"']+\$//"; }
+          # Strips spaces (incl. non-breaking and zero-width) and straight or curly quotes from both ends.
+          clean() { python3 -c 'import sys; print(sys.argv[1].strip(" \t\r\n\u00a0\u200b\ufeff\"\x27`\u201c\u201d\u2018\u2019\u00ab\u00bb"), end="")' "$1"; }
           SFTP_HOST=$(clean "$SFTP_HOST")
           SFTP_USER=$(clean "$SFTP_USER")
           SFTP_PORT=$(clean "$SFTP_PORT")
@@ -67,7 +68,7 @@ jobs:
           if [ -z "$SFTP_HOST" ] || [ -z "$SFTP_USER" ] || [ -z "$LFTP_PASSWORD" ] || [ -z "$SFTP_PATH" ]; then
             echo "SFTP secrets are not set yet: skipping the upload."
             echo "ready=false" >> "$GITHUB_OUTPUT"
-          else
+          elif printf '%s' "$SFTP_PATH" | python3 -c 'import sys; p=sys.stdin.read(); sys.exit(0 if all(c.isascii() and c.isprintable() and c not in "\"\x27`" for c in p) else 1)'; then
             {
               echo "DEPLOY_HOST=$SFTP_HOST"
               echo "DEPLOY_USER=$SFTP_USER"
@@ -76,6 +77,9 @@ jobs:
             } >> "$GITHUB_ENV"
             echo "Will upload to: $SFTP_PATH"
             echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::SFTP_PATH contains quotes or unusual characters. Retype it by hand (don't paste): sites/values.wcrp-academy.org"
+            exit 1
           fi
 
       - uses: actions/checkout@v4
