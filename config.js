@@ -22,5 +22,5 @@ window.CARD_SORT_CONFIG = {
   listVersion: "miller-2001-v1",
   newsletterSignup: true,     // "Join the newsletter" form on Start and Results (needs the Apps Script + MailerLite key); false hides it
   oneEntryPerDevice: true,    // after finishing, "Start again" is gone: one set of answers per phone. false allows retakes (testing)
-  adminPinHash: ""            // SHA-256 hex of the admin PIN (never the PIN itself)
+  adminPinHash: "158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab"            // SHA-256 hex of the admin PIN (never the PIN itself)
 };
