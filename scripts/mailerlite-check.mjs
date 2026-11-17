@@ -1,13 +1,13 @@
 // Lists your MailerLite groups and subscriber fields, so you can set MAILERLITE_GROUP_ID (Script properties)
 // and check ML_FIELDS in apps-script/apps-script.gs. Read-only: it changes nothing in MailerLite.
 //
-// Put your key in .env as MAILERLITE_API_KEY=... (copy .env.example), then run:  npm run mailerlite
+// Put your key in .env as MAILERLITE_API_TOKEN=... (copy .env.example), then run:  npm run mailerlite
 // The key is read from .env on this computer only; it is never printed.
 import { readFileSync } from 'node:fs';
 
-const key = process.env.MAILERLITE_API_KEY || process.env.API_KEY;
+const key = process.env.MAILERLITE_API_TOKEN || process.env.API_KEY;
 if (!key) {
-  console.error('No key found. Add MAILERLITE_API_KEY=your-key to .env (copy .env.example first).');
+  console.error('No key found. Add MAILERLITE_API_TOKEN=your-key to .env (copy .env.example first).');
   process.exit(1);
 }
 
@@ -15,7 +15,7 @@ async function get(path) {
   const res = await fetch(`https://connect.mailerlite.com/api${path}`, {
     headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' },
   });
-  if (res.status === 401) throw new Error('MailerLite says the key is not valid (401). Check MAILERLITE_API_KEY in .env.');
+  if (res.status === 401) throw new Error('MailerLite says the key is not valid (401). Check MAILERLITE_API_TOKEN in .env.');
   if (!res.ok) throw new Error(`${path}: HTTP ${res.status}`);
   return (await res.json()).data || [];
 }

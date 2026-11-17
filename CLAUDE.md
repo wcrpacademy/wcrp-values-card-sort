@@ -23,7 +23,7 @@ A one-time values card sort for the WCRP Academy Leadership workshop in Cape Tow
 
 - None belong in this repo. The Apps Script web app URL is not secret and goes in `config.js`.
 - The admin PIN is never committed: store only its SHA-256 hash in `config.js`.
-- MailerLite API key: in the Apps Script's Script properties (`MAILERLITE_API_KEY`, `MAILERLITE_GROUP_ID`) for the live form, and in the gitignored `.env` for `npm run mailerlite`. Never in `config.js` or any file the page loads. `server.py` and the deploy must never serve or upload `.env`.
+- MailerLite API key: in the Apps Script's Script properties (`MAILERLITE_API_TOKEN`, `MAILERLITE_GROUP_ID`) for the live form, and in the gitignored `.env` for `npm run mailerlite`. Never in `config.js` or any file the page loads. `server.py` and the deploy must never serve or upload `.env`.
 - Infomaniak SFTP credentials live in GitHub repository secrets (names only in `deploy.yml`).
 
 ## Git

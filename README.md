@@ -26,7 +26,7 @@ Everything that may change on the day: event name, `idMode`, `topN`, `valuesList
 ## Going live (online mode)
 
 1. **Apps Script.** In the "Database" Google Sheet: Extensions → Apps Script → paste [apps-script/apps-script.gs](apps-script/apps-script.gs).
-   Project Settings → Script properties: `MAILERLITE_API_KEY`, `MAILERLITE_GROUP_ID`.
+   Project Settings → Script properties: `MAILERLITE_API_TOKEN`, `MAILERLITE_GROUP_ID`.
    Deploy → New deployment → Web app → Execute as **Me**, access **Anyone**. Copy the `…/exec` URL into `onlineEndpoint` in `config.js`.
    After changing the script: Deploy → Manage deployments → Edit → **New version** (keeps the same URL).
 2. **Admin PIN.** `npm run pin`, paste the hash into `adminPinHash`. Optional: `sheetUrl` for a shortcut to the Sheet.

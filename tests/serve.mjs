@@ -78,7 +78,7 @@ const gs = vm.createContext({
       remove: (k) => cache.delete(k),
     }),
   },
-  PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => ({ MAILERLITE_API_KEY: 'test-key', MAILERLITE_GROUP_ID: 'test-group' })[k] || null }) },
+  PropertiesService: { getScriptProperties: () => ({ getProperty: (k) => ({ MAILERLITE_API_TOKEN: 'test-key', MAILERLITE_GROUP_ID: 'test-group' })[k] || null }) },
   UrlFetchApp: {
     fetch: (url, opts) => {
       const body = JSON.parse(opts.payload);

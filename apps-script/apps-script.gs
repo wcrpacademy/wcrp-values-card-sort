@@ -11,8 +11,8 @@
  *
  * Newsletter sign-up (type "newsletter"): forwarded straight to MailerLite, never written to the Sheet
  * and never linked to card-sort answers. Set these in Project Settings → Script properties (not in code):
- *   MAILERLITE_API_KEY   your MailerLite API key
- *   MAILERLITE_GROUP_ID  the group to add people to (optional; run `npm run mailerlite` to list groups)
+ *   MAILERLITE_API_TOKEN  your MailerLite API key
+ *   MAILERLITE_GROUP_ID   the group to add people to (optional; run `npm run mailerlite` to list groups)
  * Check the field keys in ML_FIELDS below against your account (`npm run mailerlite` lists them).
  */
 
@@ -148,7 +148,7 @@ function subscribe(d) {
   if (d.consent !== true) return { ok: false, error: 'no_consent' };
 
   const props = PropertiesService.getScriptProperties();
-  const key = props.getProperty('MAILERLITE_API_KEY');
+  const key = props.getProperty('MAILERLITE_API_TOKEN');
   if (!key) return { ok: false, error: 'not_configured' };
   const group = props.getProperty('MAILERLITE_GROUP_ID');
 
