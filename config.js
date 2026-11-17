@@ -15,7 +15,7 @@ window.CARD_SORT_CONFIG = {
   liveView: true,             // enables live.html for the projector
   liveMinResponses: 5,        // live chart stays hidden until this many results (keep in sync with apps-script.gs)
   onlineHost: "values.wcrp-academy.org", // pages loaded from this host save to onlineEndpoint; anywhere else uses offlineEndpoint
-  onlineEndpoint: "",         // Apps Script web app URL
+  onlineEndpoint: "https://script.google.com/macros/s/AKfycbxyFawzJ8If9TfmGj0djEp1e8FOTtkvV2lY7DSiMc46C_6PEOCXJCdqsTvOgJwkeMir/exec", // Apps Script web app URL (not secret)
   offlineEndpoint: "/api/submit",
   offlineLiveEndpoint: "/api/live", // live + admin views read group counts here in offline mode (server.py)
   sheetUrl: "",               // admin view: link to the Google Sheet (the Sheet stays private; this is only a shortcut)

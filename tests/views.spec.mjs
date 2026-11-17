@@ -39,6 +39,27 @@ test.describe('live view', () => {
     await request.post('/__test/outage?on=0');
     await expect(page.locator('#status')).toHaveText(/^Updated/, { timeout: 8000 });
   });
+
+  test('the QR opens full screen; Esc or a click closes it; the address stays clear of the chart', async ({ page }) => {
+    await page.goto('/live.html');
+    const url = await page.locator('#join-url').boundingBox();
+    const chart = await page.locator('.live__chart').boundingBox();
+    expect(url.x + url.width).toBeLessThanOrEqual(chart.x);
+
+    const btn = page.getByRole('button', { name: /QR code/ });
+    const full = page.getByRole('dialog', { name: 'Scan to join' });
+    await btn.click();
+    await expect(full).toBeVisible();
+    const img = await page.locator('#qr-full-img').boundingBox();
+    expect(img.height).toBeGreaterThan(600); // fills most of a 1080 px screen
+    await page.keyboard.press('Escape');
+    await expect(full).toBeHidden();
+    await expect(btn).toBeFocused();
+
+    await btn.click();
+    await full.click();
+    await expect(full).toBeHidden();
+  });
 });
 
 test.describe('admin view', () => {

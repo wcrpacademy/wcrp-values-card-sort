@@ -46,12 +46,23 @@
     </section>
 
     <aside class="live__join" aria-label="How to join">
-      <img class="live__qr" id="qr" alt="QR code to open the card sort" width="200" height="200">
-      <p>Scan, or go to<br><strong id="join-url"></strong></p>
+      <button class="live__qr-btn" id="qr-btn" type="button" aria-haspopup="dialog" title="Show the QR code full screen">
+        <img class="live__qr" id="qr" alt="QR code to open the card sort. Show it full screen" width="200" height="200">
+      </button>
+      <p class="live__join-label">Scan, or go to</p>
+      <p class="live__join-url" id="join-url"></p>
     </aside>
 
     <p class="live__status" id="status">Connecting…</p>
   </div>
+
+  <!-- Full-screen QR: click the small QR to open; click anywhere or press Esc to close. -->
+  <dialog class="qr-full" id="qr-full" aria-labelledby="qr-full-title">
+    <h2 class="qr-full__title" id="qr-full-title">Scan to join</h2>
+    <img class="qr-full__img" id="qr-full-img" alt="QR code to open the card sort" width="200" height="200">
+    <p class="qr-full__url">or go to <strong id="qr-full-url"></strong></p>
+    <p class="qr-full__hint">Click anywhere or press Esc to close</p>
+  </dialog>
 
   <div class="live live--off" id="off" hidden>
     <h1 class="live__title">The live view is turned off</h1>

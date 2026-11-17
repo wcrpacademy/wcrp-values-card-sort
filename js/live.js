@@ -25,10 +25,15 @@ function start() {
   $('#event-name').textContent = (cfg.eventName && typeof cfg.eventName === 'object' ? cfg.eventName.en : cfg.eventName) || ''; // English on the projector
   $('#top-n').textContent = Number(cfg.topN) === 10 ? 10 : 5;
   $('#min-n').textContent = min;
-  $('#join-url').textContent = target.mode === 'online' ? cfg.onlineHost : location.host;
+  const joinUrl = target.mode === 'online' ? cfg.onlineHost : location.host;
+  $('#join-url').textContent = joinUrl;
+  $('#qr-full-url').textContent = joinUrl;
   const qr = $('#qr');
-  qr.addEventListener('error', () => (qr.hidden = true));
+  const qrBtn = $('#qr-btn');
+  qr.addEventListener('error', () => (qrBtn.hidden = true));
   qr.src = `qr/${target.mode}.svg`;
+  $('#qr-full-img').src = qr.src;
+  wireQrFull(qrBtn, $('#qr-full'));
 
   if (!target.url) {
     setStatus(target.mode === 'online' ? 'Not connected: onlineEndpoint is empty in config.js' : 'Not connected: offlineLiveEndpoint is empty in config.js', true);
@@ -36,6 +41,15 @@ function start() {
   }
   poll(target.url, min);
   setInterval(renderAgo, 1000);
+}
+
+/** The small QR opens a full-screen one (polling carries on underneath). Esc closes it natively;
+ *  a click anywhere closes it too, and focus returns to the small QR. */
+function wireQrFull(btn, dlg) {
+  if (typeof dlg.showModal !== 'function') return; // very old browser: the small QR still works
+  btn.addEventListener('click', () => dlg.showModal());
+  dlg.addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => btn.focus());
 }
 
 async function poll(url, min) {
