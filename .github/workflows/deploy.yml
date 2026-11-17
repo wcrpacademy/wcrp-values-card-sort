@@ -6,7 +6,7 @@
 #   SFTP_PORT      usually 22
 #   SFTP_USER      SFTP user for the web hosting
 #   SFTP_PASSWORD  its password
-#   SFTP_PATH      the subdomain's folder on the hosting, e.g. /sites/values.wcrp-academy.org
+#   SFTP_PATH      the subdomain's folder, relative to the login folder, no leading slash: sites/values.wcrp-academy.org
 # Until SFTP_HOST is set, the deploy job is skipped (tests still run).
 
 name: Test and deploy
@@ -54,13 +54,27 @@ jobs:
       LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
       SFTP_PATH: ${{ secrets.SFTP_PATH }}
     steps:
+      # Pasted secrets often carry quotes, spaces or a line break: strip them from host, user, port and path
+      # (a quoted path once created a folder literally named "sites). The password is left as typed.
       - name: Check the SFTP secrets are set
         id: secrets
         run: |
+          clean() { printf '%s' "$1" | tr -d '\r\n' | sed -E "s/^[[:space:]\"']+//; s/[[:space:]\"']+\$//"; }
+          SFTP_HOST=$(clean "$SFTP_HOST")
+          SFTP_USER=$(clean "$SFTP_USER")
+          SFTP_PORT=$(clean "$SFTP_PORT")
+          SFTP_PATH=$(clean "$SFTP_PATH")
           if [ -z "$SFTP_HOST" ] || [ -z "$SFTP_USER" ] || [ -z "$LFTP_PASSWORD" ] || [ -z "$SFTP_PATH" ]; then
             echo "SFTP secrets are not set yet: skipping the upload."
             echo "ready=false" >> "$GITHUB_OUTPUT"
           else
+            {
+              echo "DEPLOY_HOST=$SFTP_HOST"
+              echo "DEPLOY_USER=$SFTP_USER"
+              echo "DEPLOY_PORT=${SFTP_PORT:-22}"
+              echo "DEPLOY_PATH=$SFTP_PATH"
+            } >> "$GITHUB_ENV"
+            echo "Will upload to: $SFTP_PATH"
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -88,8 +102,8 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: |
           sudo apt-get update -qq && sudo apt-get install -y -qq lftp
-          lftp -u "$SFTP_USER" --env-password -p "${SFTP_PORT:-22}" "sftp://$SFTP_HOST" -e "
+          lftp -u "$DEPLOY_USER" --env-password -p "$DEPLOY_PORT" "sftp://$DEPLOY_HOST" -e "
             set sftp:auto-confirm yes;
             set net:max-retries 3;
-            mirror --reverse --no-perms --verbose dist/ \"$SFTP_PATH\";
+            mirror --reverse --no-perms --verbose dist/ \"$DEPLOY_PATH\";
             bye"
