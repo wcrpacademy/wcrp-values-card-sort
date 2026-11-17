@@ -4,7 +4,11 @@
  * See docs/PLAN.md §5a for what each setting does.
  */
 window.CARD_SORT_CONFIG = {
-  eventName: "Leadership Workshop, Cape Town",
+  eventName: {                // one per language; a single "..." string also works
+    en: "Leadership Workshop, Cape Town",
+    fr: "Atelier sur le leadership, Le Cap"
+  },
+  languages: ["en", "fr"],    // participant page languages (flag menu in the header); ["en"] hides the menu
   idMode: "anonymous",        // "anonymous" | "self" | "badge"
   topN: 5,                    // 5 or 10
   valuesList: "trimmed",      // "full" (83) | "trimmed" (values with "trimmed": true in values.json)

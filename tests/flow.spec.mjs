@@ -96,3 +96,68 @@ test('receiver down: an unsent result survives "Start again" and is sent when th
   await page.reload(); // reopening the page sends what is waiting
   await expect.poll(async () => (await sheet(request)).results.length).toBe(1);
 });
+
+test('French: the flag menu switches the page; the choice is kept; the Sheet still gets English names', async ({ page, request }) => {
+  test.skip(test.info().project.name !== 'phone-375', 'once is enough');
+  const external = watchExternal(page);
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Language: English' }).click();
+  await page.getByRole('button', { name: 'Français' }).click();
+  await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
+  await expect(page.getByRole('heading', { level: 1, name: /Qu’est-ce qui compte le plus pour vous/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Langue.*Français/ })).toBeFocused();
+
+  await page.reload(); // kept on this phone
+  await page.getByRole('button', { name: 'Commencer le tri' }).click();
+  await page.getByRole('button', { name: 'Compris' }).click();
+  await expect(page.locator('.sort-head__label')).toHaveText('Carte 1 sur 45');
+  await expect(page.locator('.stepper__text')).toHaveText('Étape 1 sur 5 · Trier');
+
+  // The card is shown in French
+  const fr = await page.evaluate(async () => {
+    const all = (await (await fetch('values.json')).json()).values;
+    const s = JSON.parse(localStorage.getItem('wcrp-cardsort-v1'));
+    const v = all.find((x) => x.id === s.order[0]);
+    return { fr: v.fr.name, en: v.name };
+  });
+  await expect(page.locator('#card-name')).toHaveText(fr.fr);
+
+  // Switching back mid-sort keeps the place
+  await page.getByRole('button', { name: /Langue/ }).click();
+  await page.getByRole('button', { name: 'English' }).click();
+  await expect(page.locator('#card-name')).toHaveText(fr.en);
+  await expect(page.locator('.sort-head__label')).toHaveText('Card 1 of 45');
+  await page.getByRole('button', { name: /Language/ }).click();
+  await page.getByRole('button', { name: 'Français' }).click();
+
+  await jumpTo(page, 'rank');
+  await expect(page.getByRole('heading', { level: 1, name: 'Classez-les' })).toBeVisible();
+  await page.getByRole('button', { name: 'Voir mes résultats' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: 'Vos 5 valeurs les plus importantes' })).toBeVisible();
+  await expect(page.locator('#save-status-text')).toHaveText('Enregistré');
+
+  const shown = await page.locator('.top-item__name').allTextContents();
+  const row = (await sheet(request)).results[0];
+  const english = await page.evaluate(async (names) => {
+    const all = (await (await fetch('values.json')).json()).values;
+    return names.map((n) => all.find((v) => v.fr.name === n).name);
+  }, shown);
+  expect(row.slice(6, 11)).toEqual(english); // top_1..top_5 in English
+  expect(external).toEqual([]);
+});
+
+test('header fits at 320 px in both languages (no sideways scroll)', async ({ page }) => {
+  test.skip(test.info().project.name !== 'phone-375', 'once is enough');
+  await page.setViewportSize({ width: 320, height: 640 });
+  for (const lang of ['en', 'fr']) {
+    await page.goto('/');
+    await page.evaluate((l) => localStorage.setItem('wcrp-cardsort-lang', l), lang);
+    for (const step of ['start', 'sort', 'results']) {
+      await jumpTo(page, step === 'sort' ? 'start' : step);
+      if (step === 'sort') {
+        await page.locator('#start-btn').click();
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), `${lang} ${step}`).toBe(true);
+    }
+  }
+});

@@ -81,6 +81,12 @@
     <symbol id="i-external" viewBox="0 0 24 24">
       <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></g>
     </symbol>
+    <symbol id="flag-en" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice">
+      <path fill="#012169" d="M0 0h60v30H0z"/><path stroke="#fff" stroke-width="6" d="M0 0l60 30M60 0L0 30"/><path stroke="#C8102E" stroke-width="2" d="M0 0l60 30M60 0L0 30"/><path stroke="#fff" stroke-width="10" d="M30 0v30M0 15h60"/><path stroke="#C8102E" stroke-width="6" d="M30 0v30M0 15h60"/>
+    </symbol>
+    <symbol id="flag-fr" viewBox="0 0 3 2">
+      <path fill="#002654" d="M0 0h1v2H0z"/><path fill="#fff" d="M1 0h1v2H1z"/><path fill="#CE1126" d="M2 0h1v2H2z"/>
+    </symbol>
     <symbol id="i-pencil" viewBox="0 0 24 24">
       <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 21h8"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></g>
     </symbol>
@@ -88,15 +94,26 @@
 
   <header class="topbar">
     <div class="topbar__inner">
-      <span class="brand"><img class="brand__logo" src="img/logo.png" alt="" width="30" height="29">WCRP Academy</span>
-      <p class="stepper" id="stepper" hidden>
-        <span class="stepper__text">Step <span id="stepper-n"></span> of 5 · <span id="stepper-name"></span></span>
-        <span class="stepper__bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
-      </p>
-      <!-- On Start and Results; the step indicator takes this place while sorting -->
-      <a class="header-btn" id="official-link" href="https://wcrp-academy.org/" target="_blank" rel="noopener" hidden>
-        Official site<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg><span class="visually-hidden"> (wcrp-academy.org, opens in a new tab)</span>
-      </a>
+      <span class="brand"><img class="brand__logo" src="img/academy-logo-light.png" alt="WCRP Academy" width="111" height="40"></span>
+      <div class="topbar__end">
+        <p class="stepper" id="stepper" hidden>
+          <span class="stepper__text" id="stepper-text"></span>
+          <span class="stepper__bar" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+        </p>
+        <!-- On Start and Results; the step indicator takes this place while sorting. Icon only on phones (the name stays for screen readers). -->
+        <a class="header-btn" id="official-link" href="https://wcrp-academy.org/" target="_blank" rel="noopener" hidden>
+          <span class="header-btn__text" data-i18n="officialSite">Official site</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg><span class="visually-hidden" data-i18n="officialSiteNote"> (wcrp-academy.org, opens in a new tab)</span>
+        </a>
+        <!-- Language: a flag button that opens the list of languages in config.js. Every screen. -->
+        <div class="lang" id="lang" hidden>
+          <button type="button" class="lang__btn" id="lang-btn" aria-expanded="false" aria-controls="lang-menu">
+            <svg class="flag" aria-hidden="true" focusable="false"><use id="lang-btn-flag" href="#flag-en"/></svg>
+            <svg class="icon lang__chevron" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
+            <span class="visually-hidden" id="lang-btn-text"></span>
+          </button>
+          <ul class="lang__menu" id="lang-menu" role="list" hidden></ul>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -104,18 +121,19 @@
 
     <!-- Loading (visible until app.js is ready) -->
     <section class="screen" data-screen="loading">
-      <p class="status-text" id="loading-msg">Loading…</p>
-      <noscript><p>This activity needs JavaScript. Please ask a facilitator for a paper worksheet.</p></noscript>
+      <p class="status-text" id="loading-msg" data-i18n="loading">Loading…</p>
+      <noscript><p>This activity needs JavaScript. Please ask a facilitator for a paper worksheet.</p>
+        <p lang="fr">Cette activité nécessite JavaScript. Demandez une fiche papier à un animateur.</p></noscript>
     </section>
 
     <!-- 0. Start -->
     <section class="screen" data-screen="start" aria-labelledby="start-title" hidden>
       <div class="hero">
         <p class="eyebrow" data-bind="eventName"></p>
-        <h1 id="start-title" tabindex="-1">What matters most to you?</h1>
+        <h1 id="start-title" tabindex="-1" data-i18n="start.title">What matters most to you?</h1>
         <p class="meta">
           <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-clock"/></svg>
-          <span><span data-bind="cardTotal"></span> values · about <span data-bind="minutes"></span> minutes</span>
+          <span data-i18n="start.meta"></span>
         </p>
       </div>
 
@@ -124,34 +142,34 @@
           <li>
             <span class="steps__n" aria-hidden="true">1</span>
             <div class="steps__body">
-              <p>Sort each value into one of three piles.</p>
-              <ul class="pile-legend" aria-label="The three piles">
+              <p data-i18n="start.step1">Sort each value into one of three piles.</p>
+              <ul class="pile-legend" aria-label="The three piles" data-i18n-label="start.pilesLabel">
                 <li class="pile-chip pile-chip--very">
-                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-star"/></svg>Very important
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-star"/></svg><span data-i18n="pile.very">Very important</span>
                 </li>
                 <li class="pile-chip pile-chip--important">
-                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>Important
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><span data-i18n="pile.important">Important</span>
                 </li>
                 <li class="pile-chip pile-chip--not">
-                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg>Not important
+                  <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg><span data-i18n="pile.not">Not important</span>
                 </li>
               </ul>
             </div>
           </li>
           <li>
             <span class="steps__n" aria-hidden="true">2</span>
-            <p class="steps__text">Pick your top <span data-bind="topN"></span> values.</p>
+            <p class="steps__text" data-i18n="start.step2"></p>
           </li>
           <li>
             <span class="steps__n" aria-hidden="true">3</span>
-            <p class="steps__text">Put them in order, most important first.</p>
+            <p class="steps__text" data-i18n="start.step3">Put them in order, most important first.</p>
           </li>
         </ol>
       </div>
 
       <div class="notice notice--warn" id="start-lost" role="status" hidden>
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
-        <p>Your earlier sorting couldn't be restored, so you're starting again.</p>
+        <p data-i18n="start.lost"></p>
       </div>
 
       <div class="notice" role="note">
@@ -161,7 +179,7 @@
 
       <div class="notice notice--warn" id="start-nostore" hidden>
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
-        <p>This browser can't save your progress. Keep this page open until you finish.</p>
+        <p data-i18n="start.noStore"></p>
       </div>
 
       <form class="start-form" id="start-form" novalidate>
@@ -177,7 +195,7 @@
           </p>
         </div>
 
-        <button type="submit" class="btn btn--primary btn--block" id="start-btn">Start sorting</button>
+        <button type="submit" class="btn btn--primary btn--block" id="start-btn" data-i18n="start.button">Start sorting</button>
       </form>
     </section>
 
@@ -185,12 +203,12 @@
     <section class="screen screen--sort" data-screen="sort" aria-labelledby="card-name" hidden>
       <div class="sort-head">
         <div class="sort-head__row">
-          <p class="sort-head__label">Card <span data-bind="cardIndex"></span> of <span data-bind="cardTotal"></span></p>
+          <p class="sort-head__label" data-i18n="sort.cardOf"></p>
           <button type="button" class="btn btn--secondary btn--small" id="undo-btn">
-            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg>Undo
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-undo"/></svg><span data-i18n="sort.undo">Undo</span>
           </button>
         </div>
-        <div class="progress" id="sort-progress" role="progressbar" aria-label="Cards sorted"
+        <div class="progress" id="sort-progress" role="progressbar" aria-label="Cards sorted" data-i18n-label="sort.progress"
              aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
           <div class="progress__fill" id="sort-progress-fill"></div>
         </div>
@@ -199,35 +217,35 @@
       <div class="sort-stage" id="sort-stage" data-left="many">
         <!-- The next card, seen underneath while the current one is dragged -->
         <div class="value-card value-card--next" id="next-card" aria-hidden="true">
-          <p class="value-card__prompt">Next</p>
+          <p class="value-card__prompt" data-i18n="sort.next">Next</p>
           <p class="value-card__name" id="next-name"></p>
           <p class="value-card__desc" id="next-desc"></p>
         </div>
         <div class="value-card" id="value-card">
-          <p class="value-card__prompt">How important is this to you?</p>
+          <p class="value-card__prompt" data-i18n="sort.prompt">How important is this to you?</p>
           <h1 class="value-card__name" id="card-name" tabindex="-1"></h1>
           <p class="value-card__desc" id="card-desc"></p>
         </div>
       </div>
 
-      <div class="pile-buttons" role="group" aria-label="Put this value in a pile">
+      <div class="pile-buttons" role="group" aria-label="Put this value in a pile" data-i18n-label="sort.pileGroup">
         <button type="button" class="pile-btn pile-btn--very" data-pile="very" aria-describedby="pile-desc-very">
           <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-star"/></svg>
-          <span class="pile-btn__label">Very important</span>
+          <span class="pile-btn__label" data-i18n="pile.very">Very important</span>
           <span class="pile-btn__count" data-count="very" aria-hidden="true">0</span>
         </button>
         <button type="button" class="pile-btn pile-btn--important" data-pile="important" aria-describedby="pile-desc-important">
           <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>
-          <span class="pile-btn__label">Important</span>
+          <span class="pile-btn__label" data-i18n="pile.important">Important</span>
           <span class="pile-btn__count" data-count="important" aria-hidden="true">0</span>
         </button>
         <button type="button" class="pile-btn pile-btn--not" data-pile="not" aria-describedby="pile-desc-not">
           <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg>
-          <span class="pile-btn__label">Not important</span>
+          <span class="pile-btn__label" data-i18n="pile.not">Not important</span>
           <span class="pile-btn__count" data-count="not" aria-hidden="true">0</span>
         </button>
       </div>
-      <p class="sort-hint">Drag the card onto a pile, or tap a pile.<span class="key-hint"> Keys: 1, 2, 3 · Z to undo.</span></p>
+      <p class="sort-hint"><span data-i18n="sort.hint">Drag the card onto a pile, or tap a pile.</span><span class="key-hint" data-i18n="sort.keys"> Keys: 1, 2, 3 · Z to undo.</span></p>
 
       <!-- Read out with each pile button: how many values are in the pile so far -->
       <div hidden>
@@ -240,16 +258,16 @@
     <!-- 2. Review piles -->
     <section class="screen" data-screen="review" aria-labelledby="review-title" hidden>
       <div class="title-group">
-        <h1 id="review-title" tabindex="-1">Review your piles</h1>
-        <p>All <span data-bind="cardTotal"></span> sorted. Move any value that's in the wrong pile.</p>
+        <h1 id="review-title" tabindex="-1" data-i18n="review.title">Review your piles</h1>
+        <p data-i18n="review.lead"></p>
       </div>
 
       <div class="piles" id="review-piles">
         <details class="pile pile--very" data-pile="very">
           <summary class="pile__summary">
             <span class="pile__icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-star"/></svg></span>
-            <span class="pile__label">Very important</span>
-            <span class="pile__count"><span data-count="very">0</span><span class="visually-hidden"> values</span></span>
+            <span class="pile__label" data-i18n="pile.very">Very important</span>
+            <span class="pile__count"><span data-count="very">0</span><span class="visually-hidden" data-i18n="review.countUnit"> values</span></span>
             <svg class="icon pile__chevron" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
           </summary>
           <ul class="pile__list" data-list="very" role="list"></ul>
@@ -257,8 +275,8 @@
         <details class="pile pile--important" data-pile="important">
           <summary class="pile__summary">
             <span class="pile__icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg></span>
-            <span class="pile__label">Important</span>
-            <span class="pile__count"><span data-count="important">0</span><span class="visually-hidden"> values</span></span>
+            <span class="pile__label" data-i18n="pile.important">Important</span>
+            <span class="pile__count"><span data-count="important">0</span><span class="visually-hidden" data-i18n="review.countUnit"> values</span></span>
             <svg class="icon pile__chevron" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
           </summary>
           <ul class="pile__list" data-list="important" role="list"></ul>
@@ -266,8 +284,8 @@
         <details class="pile pile--not" data-pile="not">
           <summary class="pile__summary">
             <span class="pile__icon"><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-minus"/></svg></span>
-            <span class="pile__label">Not important</span>
-            <span class="pile__count"><span data-count="not">0</span><span class="visually-hidden"> values</span></span>
+            <span class="pile__label" data-i18n="pile.not">Not important</span>
+            <span class="pile__count"><span data-count="not">0</span><span class="visually-hidden" data-i18n="review.countUnit"> values</span></span>
             <svg class="icon pile__chevron" aria-hidden="true" focusable="false"><use href="#i-chevron"/></svg>
           </summary>
           <ul class="pile__list" data-list="not" role="list"></ul>
@@ -276,18 +294,18 @@
 
       <div class="action-bar action-bar--sticky">
         <p class="action-bar__note" id="review-note" role="status"></p>
-        <button type="button" class="btn btn--primary btn--block" id="review-next"><span>Choose my top <span data-bind="topN"></span></span></button>
+        <button type="button" class="btn btn--primary btn--block" id="review-next" data-i18n="review.next"></button>
       </div>
     </section>
 
     <!-- 3. Choose top N -->
     <section class="screen" data-screen="choose" aria-labelledby="choose-title" hidden>
       <button type="button" class="back-link" data-go="review">
-        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>Back to my piles
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-back"/></svg><span data-i18n="choose.back">Back to my piles</span>
       </button>
       <div class="title-group">
-        <h1 id="choose-title" tabindex="-1">Choose your top <span data-bind="topN"></span></h1>
-        <p>Tick the <span data-bind="topN"></span> that matter most. <span id="choose-extra" hidden>Your Very important pile has fewer than <span data-bind="topN"></span>, so your Important pile is here too.</span></p>
+        <h1 id="choose-title" tabindex="-1" data-i18n="choose.title"></h1>
+        <p><span data-i18n="choose.lead"></span> <span id="choose-extra" data-i18n="choose.extra" hidden></span></p>
       </div>
 
       <div class="choose-groups" id="choose-groups"></div>
@@ -297,25 +315,25 @@
           <span class="choose-status__count" id="choose-count"></span>
           <span class="choose-status__note" id="choose-note"></span>
         </p>
-        <button type="button" class="btn btn--primary btn--block" id="choose-next">Continue</button>
+        <button type="button" class="btn btn--primary btn--block" id="choose-next" data-i18n="choose.next">Continue</button>
       </div>
     </section>
 
     <!-- 4. Rank -->
     <section class="screen" data-screen="rank" aria-labelledby="rank-title" hidden>
       <button type="button" class="back-link" data-go="choose">
-        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-back"/></svg>Change my choices
+        <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-back"/></svg><span data-i18n="rank.back">Change my choices</span>
       </button>
       <div class="title-group">
-        <h1 id="rank-title" tabindex="-1">Put them in order</h1>
-        <p>Most important at the top. Use the arrows to move a value.</p>
+        <h1 id="rank-title" tabindex="-1" data-i18n="rank.title">Put them in order</h1>
+        <p data-i18n="rank.lead">Most important at the top. Use the arrows to move a value.</p>
       </div>
 
       <ol class="rank-list" id="rank-list" role="list"></ol>
 
       <div class="action-bar">
-        <button type="button" class="btn btn--primary btn--block" id="rank-next">See my results</button>
-        <p class="action-bar__hint">You can't change your answers after this.</p>
+        <button type="button" class="btn btn--primary btn--block" id="rank-next" data-i18n="rank.next">See my results</button>
+        <p class="action-bar__hint" data-i18n="rank.final"></p>
       </div>
     </section>
 
@@ -323,8 +341,8 @@
     <section class="screen" data-screen="results" aria-labelledby="results-title" hidden>
       <div class="hero">
         <p class="eyebrow" data-bind="eventName"></p>
-        <h1 id="results-title" tabindex="-1">Your top <span data-bind="rankedCount"></span> values</h1>
-        <p class="hero__lead">What matters most to you, in your own order.</p>
+        <h1 id="results-title" tabindex="-1" data-i18n="results.title"></h1>
+        <p class="hero__lead" data-i18n="results.lead">What matters most to you, in your own order.</p>
       </div>
 
       <ol class="top-list" id="top-list" role="list"></ol>
@@ -335,27 +353,27 @@
         </span>
         <div class="save-status__body">
           <p class="save-status__text" id="save-status-text"></p>
-          <p class="save-status__code">Your code: <span data-bind="code"></span></p>
+          <p class="save-status__code" data-i18n="results.code"></p>
         </div>
-        <button type="button" class="btn btn--secondary btn--small" id="save-retry" hidden>Try again</button>
+        <button type="button" class="btn btn--secondary btn--small" id="save-retry" data-i18n="results.retry" hidden>Try again</button>
       </div>
 
       <div class="callout">
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-pencil"/></svg>
-        <p>Copy your top <span data-bind="rankedCount"></span> onto your worksheet.</p>
+        <p data-i18n="results.copy"></p>
       </div>
 
       <section class="subsection" id="very-all" aria-labelledby="very-all-title">
-        <h2 id="very-all-title">Your Very important pile (<span data-bind="veryCount"></span>)</h2>
+        <h2 id="very-all-title" data-i18n="results.very"></h2>
         <ul class="chip-list" id="very-list" role="list"></ul>
       </section>
     </section>
 
     <!-- Error -->
     <section class="screen" data-screen="error" aria-labelledby="error-title" hidden>
-      <h1 id="error-title" tabindex="-1">Something went wrong</h1>
+      <h1 id="error-title" tabindex="-1" data-i18n="error.title">Something went wrong</h1>
       <p id="error-msg"></p>
-      <button type="button" class="btn btn--primary btn--block" id="reload-btn">Reload the page</button>
+      <button type="button" class="btn btn--primary btn--block" id="reload-btn" data-i18n="error.reload">Reload the page</button>
     </section>
   </main>
 
@@ -367,39 +385,39 @@
         <p class="confirm__q" id="restart-q"></p>
         <div class="confirm__actions">
           <button type="button" class="btn btn--danger" id="restart-yes">Yes, start over</button>
-          <button type="button" class="btn btn--secondary" id="restart-no">Cancel</button>
+          <button type="button" class="btn btn--secondary" id="restart-no" data-i18n="restart.cancel">Cancel</button>
         </div>
       </div>
     </div>
     <!-- On Start and Results only. Links open in a new tab so the activity stays open. -->
     <section class="site-footer" aria-labelledby="newsletter-title">
       <div class="newsletter" id="newsletter">
-        <h2 class="newsletter__title" id="newsletter-title">Stay in touch with the WCRP Academy</h2>
-        <p>Climate science training and opportunities, in our quarterly newsletter.</p>
+        <h2 class="newsletter__title" id="newsletter-title" data-i18n="news.title">Stay in touch with the WCRP Academy</h2>
+        <p data-i18n="news.lead">Climate science training and opportunities, in our quarterly newsletter.</p>
         <button type="button" class="btn btn--primary" id="newsletter-open" aria-haspopup="dialog">
-          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg>Join the newsletter
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-mail"/></svg><span data-i18n="news.open">Join the newsletter</span>
         </button>
         <p class="newsletter__done" id="newsletter-thanks" hidden>
-          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg>You're signed up. Thank you!
+          <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-check"/></svg><span data-i18n="news.thanks"></span>
         </p>
       </div>
       <ul class="link-cards" role="list">
         <li>
           <a class="link-card" href="https://wcrp-academy.org/wcrp-future-leaders-programme/" target="_blank" rel="noopener">
             <span class="link-card__icon" aria-hidden="true"><svg class="icon" focusable="false"><use href="#i-compass"/></svg></span>
-            <span class="link-card__title">Future Leaders Programme</span>
-            <span class="link-card__text">The WCRP Academy's programme for the next generation of climate science leaders.</span>
-            <span class="link-card__more">Find out more<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></span>
-            <span class="visually-hidden"> (opens in a new tab)</span>
+            <span class="link-card__title" data-i18n="links.flp">Future Leaders Programme</span>
+            <span class="link-card__text" data-i18n="links.flpText"></span>
+            <span class="link-card__more"><span data-i18n="links.flpMore">Find out more</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></span>
+            <span class="visually-hidden" data-i18n="newTab"> (opens in a new tab)</span>
           </a>
         </li>
         <li>
           <a class="link-card" href="https://wcrp-academy.org/catalogue/" target="_blank" rel="noopener">
             <span class="link-card__icon" aria-hidden="true"><svg class="icon" focusable="false"><use href="#i-book"/></svg></span>
-            <span class="link-card__title">Training catalogue</span>
-            <span class="link-card__text">Browse climate science courses and training from across the WCRP Academy network.</span>
-            <span class="link-card__more">Browse training<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></span>
-            <span class="visually-hidden"> (opens in a new tab)</span>
+            <span class="link-card__title" data-i18n="links.catalogue">Training catalogue</span>
+            <span class="link-card__text" data-i18n="links.catalogueText"></span>
+            <span class="link-card__more"><span data-i18n="links.catalogueMore">Browse training</span><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-external"/></svg></span>
+            <span class="visually-hidden" data-i18n="newTab"> (opens in a new tab)</span>
           </a>
         </li>
       </ul>
@@ -411,35 +429,32 @@
   <footer class="site-bottom">
     <div class="site-bottom__inner">
       <div class="site-bottom__brand">
-        <img class="site-bottom__logo" src="img/logo.png" alt="" width="40" height="38">
-        <div>
-          <p class="site-bottom__name">WCRP Academy</p>
-          <p class="site-bottom__tagline">A hub for climate science training</p>
-        </div>
+        <img class="site-bottom__logo" src="img/academy-logo-light.png" alt="WCRP Academy" width="133" height="48">
+        <p class="site-bottom__tagline" data-i18n="footer.tagline">A hub for climate science training</p>
       </div>
-      <ul class="social" role="list" aria-label="WCRP Academy on social media">
+      <ul class="social" role="list" aria-label="WCRP Academy on social media" data-i18n-label="footer.social">
         <li>
-          <a class="social__link" href="https://www.linkedin.com/company/wcrp-academy1/" target="_blank" rel="noopener" aria-label="WCRP Academy on LinkedIn (opens in a new tab)">
+          <a class="social__link" href="https://www.linkedin.com/company/wcrp-academy1/" target="_blank" rel="noopener" aria-label="WCRP Academy on LinkedIn (opens in a new tab)" data-i18n-label="footer.on" data-site="LinkedIn">
             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-linkedin"/></svg>
           </a>
         </li>
         <li>
-          <a class="social__link" href="https://www.facebook.com/profile.php?id=61568581633290" target="_blank" rel="noopener" aria-label="WCRP Academy on Facebook (opens in a new tab)">
+          <a class="social__link" href="https://www.facebook.com/profile.php?id=61568581633290" target="_blank" rel="noopener" aria-label="WCRP Academy on Facebook (opens in a new tab)" data-i18n-label="footer.on" data-site="Facebook">
             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-facebook"/></svg>
           </a>
         </li>
         <li>
-          <a class="social__link" href="https://www.instagram.com/wcrpacademy/" target="_blank" rel="noopener" aria-label="WCRP Academy on Instagram (opens in a new tab)">
+          <a class="social__link" href="https://www.instagram.com/wcrpacademy/" target="_blank" rel="noopener" aria-label="WCRP Academy on Instagram (opens in a new tab)" data-i18n-label="footer.on" data-site="Instagram">
             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-instagram"/></svg>
           </a>
         </li>
         <li>
-          <a class="social__link" href="https://www.youtube.com/@WCRPAcademy2021" target="_blank" rel="noopener" aria-label="WCRP Academy on YouTube (opens in a new tab)">
+          <a class="social__link" href="https://www.youtube.com/@WCRPAcademy2021" target="_blank" rel="noopener" aria-label="WCRP Academy on YouTube (opens in a new tab)" data-i18n-label="footer.on" data-site="YouTube">
             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-youtube"/></svg>
           </a>
         </li>
       </ul>
-      <p class="site-bottom__copy">© <span id="copy-year">2026</span> WCRP Academy. All rights reserved.</p>
+      <p class="site-bottom__copy" data-i18n="footer.copy"></p>
     </div>
   </footer>
 
@@ -447,23 +462,23 @@
   <dialog class="tutorial" id="tutorial" aria-labelledby="tutorial-title" aria-describedby="tutorial-steps">
     <div class="tutorial__scene" aria-hidden="true">
       <div class="demo-card">
-        <span class="demo-card__name">Honesty</span>
-        <span class="demo-card__desc">to be honest and truthful</span>
+        <span class="demo-card__name" id="demo-name">Honesty</span>
+        <span class="demo-card__desc" id="demo-desc">to be honest and truthful</span>
       </div>
       <div class="demo-piles">
         <span class="demo-pile demo-pile--very"><svg class="icon" focusable="false"><use href="#i-star"/></svg></span>
         <span class="demo-pile demo-pile--important"><svg class="icon" focusable="false"><use href="#i-check"/></svg></span>
         <span class="demo-pile demo-pile--not"><svg class="icon" focusable="false"><use href="#i-minus"/></svg></span>
       </div>
-      <span class="demo-chip">Honesty</span>
+      <span class="demo-chip" id="demo-chip">Honesty</span>
       <span class="demo-finger"></span>
     </div>
-    <h2 id="tutorial-title">How to sort</h2>
+    <h2 id="tutorial-title" data-i18n="tutorial.title">How to sort</h2>
     <ul class="tutorial__steps" id="tutorial-steps" role="list">
-      <li>Drag the card onto a pile, or just tap a pile.</li>
-      <li>Changed your mind? Tap Undo.</li>
+      <li data-i18n="tutorial.drag">Drag the card onto a pile, or just tap a pile.</li>
+      <li data-i18n="tutorial.undo">Changed your mind? Tap Undo.</li>
     </ul>
-    <button type="button" class="btn btn--primary btn--block" id="tutorial-ok">Got it</button>
+    <button type="button" class="btn btn--primary btn--block" id="tutorial-ok" data-i18n="tutorial.ok">Got it</button>
   </dialog>
 
   <!--
@@ -472,16 +487,16 @@
   -->
   <dialog class="sheet" id="nl-dialog" aria-labelledby="nl-title">
     <div class="sheet__head">
-      <h2 id="nl-title" tabindex="-1">Join the WCRP Academy newsletter</h2>
-      <button type="button" class="icon-btn icon-btn--plain" id="nl-close" aria-label="Close">
+      <h2 id="nl-title" tabindex="-1" data-i18n="nl.title">Join the WCRP Academy newsletter</h2>
+      <button type="button" class="icon-btn icon-btn--plain" id="nl-close" aria-label="Close" data-i18n-label="nl.close">
         <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-close"/></svg>
       </button>
     </div>
 
     <form class="sheet__form" id="nl-form" novalidate>
       <div class="sheet__body">
-        <p class="sheet__intro">Climate science training and opportunities, four times a year. This is separate from the card sort: your values answers stay anonymous.</p>
-        <p class="required-note"><span aria-hidden="true">*</span> Required</p>
+        <p class="sheet__intro" data-i18n="nl.intro"></p>
+        <p class="required-note"><span aria-hidden="true">*</span> <span data-i18n="nl.required">Required</span></p>
 
         <div class="notice notice--error" id="nl-general" role="alert" hidden>
           <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-alert"/></svg>
@@ -490,49 +505,49 @@
 
         <div class="field-row">
           <div class="field">
-            <label class="field__label" for="nl-first">First name <span class="req" aria-hidden="true">*</span></label>
+            <label class="field__label" for="nl-first"><span data-i18n="nl.first">First name</span> <span class="req" aria-hidden="true">*</span></label>
             <input class="input" id="nl-first" name="first_name" type="text" autocomplete="given-name" maxlength="60" required>
             <p class="field__error" id="nl-first-error" hidden></p>
           </div>
           <div class="field">
-            <label class="field__label" for="nl-last">Last name <span class="req" aria-hidden="true">*</span></label>
+            <label class="field__label" for="nl-last"><span data-i18n="nl.last">Last name</span> <span class="req" aria-hidden="true">*</span></label>
             <input class="input" id="nl-last" name="last_name" type="text" autocomplete="family-name" maxlength="60" required>
             <p class="field__error" id="nl-last-error" hidden></p>
           </div>
         </div>
 
         <div class="field">
-          <label class="field__label" for="nl-email">Email address <span class="req" aria-hidden="true">*</span></label>
+          <label class="field__label" for="nl-email"><span data-i18n="nl.email">Email address</span> <span class="req" aria-hidden="true">*</span></label>
           <input class="input" id="nl-email" name="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" maxlength="254" required>
           <p class="field__error" id="nl-email-error" hidden></p>
         </div>
 
         <div class="field">
-          <label class="field__label" for="nl-country">Country</label>
+          <label class="field__label" for="nl-country" data-i18n="nl.country">Country</label>
           <select class="input input--select" id="nl-country" name="country" autocomplete="country-name">
-            <option value="">Select your country</option>
+            <option value="" data-i18n="nl.countryPick">Select your country</option>
           </select>
         </div>
 
         <div class="field">
-          <label class="field__label" for="nl-language">Language</label>
+          <label class="field__label" for="nl-language" data-i18n="nl.language">Language</label>
           <select class="input input--select" id="nl-language" name="language">
-            <option value="">Select a language</option>
+            <option value="" data-i18n="nl.languagePick">Select a language</option>
           </select>
         </div>
 
         <div class="field">
-          <label class="field__label" for="nl-affiliation">Affiliation or institution</label>
+          <label class="field__label" for="nl-affiliation" data-i18n="nl.affiliation">Affiliation or institution</label>
           <input class="input" id="nl-affiliation" name="affiliation" type="text" autocomplete="organization" maxlength="120">
         </div>
 
         <fieldset class="check-group">
-          <legend class="field__label">Are you a/an…</legend>
+          <legend class="field__label" data-i18n="nl.roles">Are you a/an…</legend>
           <div class="check-group__items" id="nl-roles"></div>
         </fieldset>
 
         <fieldset class="check-group">
-          <legend class="field__label">What topics are you interested in?</legend>
+          <legend class="field__label" data-i18n="nl.topics">What topics are you interested in?</legend>
           <div class="check-group__items" id="nl-topics"></div>
         </fieldset>
 
@@ -545,8 +560,8 @@
         <div class="field">
           <label class="check-line check-line--consent">
             <input type="checkbox" id="nl-consent" name="consent" required>
-            <span>I agree to receive communications from the WCRP Academy and accept the
-              <a href="https://wcrp-academy.org/privacy/" target="_blank" rel="noopener">data privacy statement<span class="visually-hidden"> (opens in a new tab)</span></a>.
+            <span><span data-i18n="nl.consentBefore">I agree to receive communications from the WCRP Academy and accept the</span>
+              <a href="https://wcrp-academy.org/privacy/" target="_blank" rel="noopener"><span data-i18n="nl.consentLink">data privacy statement</span><span class="visually-hidden" data-i18n="newTab"> (opens in a new tab)</span></a><span data-i18n="nl.consentAfter">.</span>
               <span class="req" aria-hidden="true">*</span></span>
           </label>
           <p class="field__error" id="nl-consent-error" hidden></p>
@@ -554,22 +569,22 @@
       </div>
 
       <div class="sheet__foot">
-        <button type="submit" class="btn btn--primary btn--block" id="nl-submit">Subscribe</button>
+        <button type="submit" class="btn btn--primary btn--block" id="nl-submit" data-i18n="nl.submit">Subscribe</button>
       </div>
     </form>
 
     <div class="sheet__panel" id="nl-done" hidden>
       <span class="sheet__panel-icon sheet__panel-icon--ok" aria-hidden="true"><svg class="icon" focusable="false"><use href="#i-check"/></svg></span>
-      <p class="sheet__panel-title" id="nl-done-title" tabindex="-1">Thank you for signing up!</p>
-      <p>Look out for the WCRP Academy newsletter in your inbox.</p>
-      <button type="button" class="btn btn--secondary btn--block" data-nl-close>Close</button>
+      <p class="sheet__panel-title" id="nl-done-title" tabindex="-1" data-i18n="nl.doneTitle">Thank you for signing up!</p>
+      <p data-i18n="nl.doneText">Look out for the WCRP Academy newsletter in your inbox.</p>
+      <button type="button" class="btn btn--secondary btn--block" data-nl-close data-i18n="nl.close">Close</button>
     </div>
 
     <div class="sheet__panel" id="nl-offline" hidden>
       <span class="sheet__panel-icon" aria-hidden="true"><svg class="icon" focusable="false"><use href="#i-alert"/></svg></span>
-      <p class="sheet__panel-title" id="nl-offline-title" tabindex="-1">Sign-up needs the internet</p>
-      <p>This page is running without an internet connection, so we can't sign you up here. You can sign up any time at wcrp-academy.org.</p>
-      <button type="button" class="btn btn--secondary btn--block" data-nl-close>Close</button>
+      <p class="sheet__panel-title" id="nl-offline-title" tabindex="-1" data-i18n="nl.offlineTitle">Sign-up needs the internet</p>
+      <p data-i18n="nl.offlineText"></p>
+      <button type="button" class="btn btn--secondary btn--block" data-nl-close data-i18n="nl.close">Close</button>
     </div>
   </dialog>
 
@@ -580,7 +595,8 @@
 
   <script nomodule>
     document.getElementById('loading-msg').textContent =
-      'This browser is too old for this activity. Please ask a facilitator for a paper worksheet.';
+      'This browser is too old for this activity. Please ask a facilitator for a paper worksheet. / ' +
+      'Ce navigateur est trop ancien pour cette activité. Demandez une fiche papier à un animateur.';
   </script>
 </body>
 </html>

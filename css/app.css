@@ -98,31 +98,127 @@ h1, h2, h3, p { margin: 0; }
 }
 .header-btn .icon { width: 1em; height: 1em; }
 @media (max-width: 359px) {
-  .brand { gap: 8px; font-size: 0.9375rem; }
   .header-btn { padding: 0 10px; }
 }
 .topbar__inner {
   max-width: 36rem;
-  min-height: 56px;
   margin: 0 auto;
-  padding: 8px var(--gutter);
+  padding: 20px; /* Ken, 17 Nov 2026 */
   display: flex;
+  flex-wrap: wrap; /* below ~340px the step indicator + language button drop under the logo */
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
-.brand {
-  display: inline-flex;
+.topbar__end {
+  margin-left: auto;
+  display: flex;
   align-items: center;
   gap: 10px;
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: 0.01em;
 }
+/* Phones: "Official site" becomes a round icon button; its name stays for screen readers */
+@media (max-width: 30rem) {
+  .header-btn__text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .header-btn {
+    width: var(--tap);
+    padding: 0;
+    justify-content: center;
+  }
+  .header-btn .icon { width: 1.125rem; height: 1.125rem; }
+}
+
+/* ---------- Language menu (flag button in the header) ---------- */
+.lang { position: relative; }
+.flag {
+  display: block;
+  flex: none;
+  width: 24px;
+  height: 16px;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgb(35 44 61 / 0.25); /* keeps the white stripe visible on white */
+}
+.lang__btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 10px 0 12px;
+  border: 2px solid rgb(241 241 241 / 0.55);
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--white);
+  font: inherit;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+.lang__btn:hover,
+.lang__btn[aria-expanded="true"] {
+  border-color: var(--green);
+  background: rgb(133 232 133 / 0.12);
+}
+.lang__chevron {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.15s ease;
+}
+.lang__btn[aria-expanded="true"] .lang__chevron { transform: rotate(180deg); }
+.lang__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 20;
+  min-width: 11rem;
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-field);
+  background: var(--white);
+  box-shadow: 0 8px 28px rgb(35 44 61 / 0.18);
+}
+.lang__opt {
+  appearance: none;
+  width: 100%;
+  min-height: var(--tap);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--navy);
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.lang__opt:hover { background: var(--paper); }
+.lang__name { flex: 1; }
+.lang__opt .icon {
+  width: 1.125rem;
+  height: 1.125rem;
+  color: var(--blue);
+  visibility: hidden;
+}
+.lang__opt[aria-current="true"] { background: var(--blue-tint); }
+.lang__opt[aria-current="true"] .icon { visibility: visible; }
+.brand { display: inline-flex; flex: none; }
+/* Full logo, light version (mark + white "WCRP Academy"), 554 × 200 */
 .brand__logo {
   display: block;
-  width: 30px;
-  height: auto;
+  width: auto;
+  height: 40px;
 }
 
 /* Step indicator in the header: "Step 2 of 5 · Review" + five segments */
@@ -1587,15 +1683,12 @@ body.is-dragging-card .pile-btn { border-style: dashed; }
 .site-bottom__brand {
   min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 12px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
 }
-.site-bottom__logo { flex: none; width: 40px; height: auto; }
-.site-bottom__name {
-  color: var(--white);
-  font-size: 1.0625rem;
-  font-weight: 700;
-}
+/* Full logo, light version (554 × 200) */
+.site-bottom__logo { display: block; width: auto; height: 48px; }
 .site-bottom__tagline { font-size: 0.9375rem; }
 .social {
   list-style: none;
@@ -1635,8 +1728,7 @@ body.is-dragging-card .pile-btn { border-style: dashed; }
     justify-items: center;
     gap: 20px;
   }
-  .site-bottom__brand { gap: 10px; }
-  .site-bottom__logo { width: 36px; }
+  .site-bottom__brand { align-items: center; text-align: center; }
   .site-bottom__tagline { font-size: 0.875rem; }
 }
 
@@ -1647,7 +1739,6 @@ body:not([data-step="start"]):not([data-step="results"]) .site-bottom { display:
 
 /* ---------- Short screens: keep the three pile buttons in view ---------- */
 @media (max-height: 600px) {
-  .topbar__inner { min-height: 44px; }
   body[data-step="sort"] .shell { padding-top: 12px; }
   .value-card {
     min-height: 9.5rem;

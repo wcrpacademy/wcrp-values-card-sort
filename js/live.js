@@ -22,7 +22,7 @@ if (cfg.liveView === false) {
 function start() {
   const target = readTarget(cfg);
   const min = Number(cfg.liveMinResponses) || 5;
-  $('#event-name').textContent = cfg.eventName || '';
+  $('#event-name').textContent = (cfg.eventName && typeof cfg.eventName === 'object' ? cfg.eventName.en : cfg.eventName) || ''; // English on the projector
   $('#top-n').textContent = Number(cfg.topN) === 10 ? 10 : 5;
   $('#min-n').textContent = min;
   $('#join-url').textContent = target.mode === 'online' ? cfg.onlineHost : location.host;

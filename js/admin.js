@@ -62,7 +62,7 @@ async function checkPin(e) {
 function unlock(focus) {
   $('#lock').hidden = true;
   $('#dash').hidden = false;
-  $('#event-name').textContent = cfg.eventName || '';
+  $('#event-name').textContent = (cfg.eventName && typeof cfg.eventName === 'object' ? cfg.eventName.en : cfg.eventName) || ''; // English on the projector
   $('#top-n').textContent = Number(cfg.topN) === 10 ? 10 : 5;
   renderLinks();
   if (focus) $('#dash-title').focus();

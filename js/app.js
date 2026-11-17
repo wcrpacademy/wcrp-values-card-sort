@@ -2,60 +2,35 @@
 // Start → Sort → Review piles → Choose top N → Rank → Results. Every change is saved,
 // so reopening the page returns to the same screen and card.
 import { restoreState, saveState, resetState, randomCode, PILE_KEYS } from './store.js';
-import { initNewsletter } from './newsletter.js';
+import { initNewsletter, relabelNewsletter } from './newsletter.js';
 import { initSender, enqueue, flush, canSend, isSending } from './send.js';
+import { initLang, getLang, getLanguages, setLang, onLangChange, t, tn, parts, applyText, LANG_NAMES } from './i18n.js';
 
 const ID_MODES = ['anonymous', 'self', 'badge'];
 const VALUE_LISTS = ['full', 'trimmed'];
 const TOP_N = [5, 10];
 
-// Each pile is always shown by colour + label + icon, never colour alone.
+// Each pile is always shown by colour + label + icon, never colour alone. Labels: i18n.js "pile.<key>".
 const PILES = {
-  very: { label: 'Very important', icon: 'star' },
-  important: { label: 'Important', icon: 'check' },
-  not: { label: 'Not important', icon: 'minus' },
+  very: { icon: 'star' },
+  important: { icon: 'check' },
+  not: { icon: 'minus' },
 };
+const pileLabel = (key) => t(`pile.${key}`);
 
-// The consent line always says honestly what is stored for the current idMode.
-const CONSENT = {
-  anonymous:
-    "Your answers are saved anonymously for the facilitators. We don't ask for your name, and nothing links your answers to you.",
-  self:
-    "Your answers are saved for the facilitators with a code you make up. Don't use your name: the code is only there so you can find your own result later.",
-  badge:
-    'Your answers are saved with your badge code (not your name), so the facilitators can link them to your workshop survey. Only group totals are shown to the room.',
-};
+// The consent line always says honestly what is stored for the current idMode (i18n.js "consent.<idMode>").
 
-// Code field, only for "self" and "badge". Server-side limit is 32 characters.
+// Code field, only for "self" and "badge". Server-side limit is 32 characters. Texts: i18n.js "code.<idMode>.*".
 const CODE_FIELD = {
-  self: {
-    label: 'Your code',
-    hint: "Make up a short code you'll remember, like your initials and 2 digits (e.g. KR27).",
-    maxLength: 12,
-    pattern: /^[A-Z0-9]{2,12}$/,
-    empty: 'Make up a code to continue.',
-    invalid: 'Use 2 to 12 letters or numbers.',
-  },
-  badge: {
-    label: 'Badge code',
-    hint: 'Enter the code printed on your badge.',
-    maxLength: 32,
-    pattern: /^[A-Z0-9][A-Z0-9-]{0,31}$/,
-    empty: 'Enter your badge code to continue.',
-    invalid: 'Enter the code as it is on your badge: letters, numbers and dashes only.',
-  },
+  self: { maxLength: 12, pattern: /^[A-Z0-9]{2,12}$/ },
+  badge: { maxLength: 32, pattern: /^[A-Z0-9][A-Z0-9-]{0,31}$/ },
 };
 
-// Save status on the Results screen. "local" only when no endpoint is set in config.js.
-const SAVE_STATUS = {
-  local: { text: 'Your results are saved on this phone.', icon: 'check' },
-  saving: { text: 'Saving…', icon: 'check' },
-  saved: { text: 'Saved', icon: 'check' },
-  pending: { text: "Not sent yet, we'll keep trying", icon: 'clock' },
-};
+// Save status on the Results screen. "local" only when no endpoint is set in config.js. Texts: i18n.js "save.<kind>".
+const SAVE_ICONS = { local: 'check', saving: 'check', saved: 'check', pending: 'clock' };
 
-// Step indicator in the header. Start has none.
-const STEP_NAMES = { sort: 'Sort', review: 'Review', choose: 'Choose', rank: 'Rank', results: 'Results' };
+// Step indicator in the header. Start has none. Names: i18n.js "step.<step>".
+const STEP_KEYS = ['sort', 'review', 'choose', 'rank', 'results'];
 
 const SORT_GUARD_MS = 300; // a double tap must not sort a card nobody has read
 const DRAG_START_PX = 8; // movement before a press on the card becomes a drag
@@ -72,6 +47,7 @@ let values = [];
 let byId = new Map();
 let credit = { credit: '' }; // credit line text + link, from values.json
 let state;
+const vars = {}; // fills {placeholders} in the page text (i18n.js); see bind()
 let lastSortAt = -Infinity; // performance.now() restarts near 0 on each page load
 const TUTORIAL_KEY = 'wcrp-cardsort-tutorial-seen'; // separate from the session, so "Start over" doesn't show it again
 
@@ -86,6 +62,10 @@ const RENDERERS = {
 
 async function main() {
   $('#reload-btn').addEventListener('click', () => location.reload());
+  initLang(window.CARD_SORT_CONFIG || {});
+  vars.year = new Date().getFullYear();
+  applyText(vars);
+  wireLang();
   try {
     cfg = readConfig(window.CARD_SORT_CONFIG);
     const data = await loadValues();
@@ -110,10 +90,7 @@ async function main() {
     show(state.step, { focus: false });
   } catch (err) {
     console.error(err);
-    showError(
-      err.userMessage ||
-        "We couldn't load the activity. Reload the page, or ask a facilitator for a paper worksheet."
-    );
+    showError(err.userKey || 'error.load');
   }
 }
 
@@ -121,7 +98,7 @@ async function main() {
 
 function readConfig(raw) {
   if (!raw || typeof raw !== 'object') {
-    throw userError('config.js is missing', "The activity isn't set up yet. Please tell a facilitator.");
+    throw userError('config.js is missing', 'error.setup');
   }
   const c = { ...raw };
   if (!ID_MODES.includes(c.idMode)) {
@@ -147,21 +124,24 @@ async function loadValues() {
   const all = Array.isArray(data.values) ? data.values : [];
   const list = cfg.valuesList === 'full' ? all : all.filter((v) => v.trimmed === true);
   if (list.length < cfg.topN) {
-    throw userError(
-      `values.json: only ${list.length} values for list "${cfg.valuesList}"`,
-      "The activity isn't set up yet. Please tell a facilitator."
-    );
+    throw userError(`values.json: only ${list.length} values for list "${cfg.valuesList}"`, 'error.setup');
   }
   return {
     credit: String(data.credit || ''),
+    creditFr: String((data.fr && data.fr.credit) || ''),
     creditLinkText: String(data.creditLinkText || ''),
     creditUrl: /^https:\/\//.test(String(data.creditUrl || '')) ? String(data.creditUrl) : '',
     list,
   };
 }
 
+/** A value's name and description in the page language (English when there is no translation). */
+const vName = (v) => (v[getLang()] && v[getLang()].name) || v.name;
+const vDesc = (v) => (v[getLang()] && v[getLang()].description) || v.description;
+
 /** The credit line, with the name of the card sort linking to its source (new tab). */
-function renderCredit({ credit: text, creditLinkText, creditUrl }) {
+function renderCredit({ credit: en, creditFr, creditLinkText, creditUrl }) {
+  const text = getLang() === 'fr' && creditFr ? creditFr : en;
   const p = $('.credit');
   const at = creditLinkText ? text.indexOf(creditLinkText) : -1;
   if (!creditUrl || at < 0) {
@@ -175,7 +155,7 @@ function renderCredit({ credit: text, creditLinkText, creditUrl }) {
   a.textContent = creditLinkText;
   const note = document.createElement('span');
   note.className = 'visually-hidden';
-  note.textContent = ' (opens in a new tab)';
+  note.textContent = t('newTab');
   a.append(note);
   p.replaceChildren(text.slice(0, at), a, text.slice(at + creditLinkText.length));
 }
@@ -188,13 +168,30 @@ function estimateMinutes(cards) {
 /** Text that never changes while the page is open. */
 function bindStatic() {
   renderCredit(credit);
-  $('#copy-year').textContent = new Date().getFullYear();
+  renderDemo();
   bind('topN', cfg.topN);
   bind('cardTotal', values.length);
+  const name = eventName();
   for (const node of $$('[data-bind="eventName"]')) {
-    node.textContent = cfg.eventName || '';
-    node.hidden = !cfg.eventName;
+    node.textContent = name;
+    node.hidden = !name;
   }
+}
+
+/** config.js eventName: one string, or one per language ({ en: "…", fr: "…" }). */
+function eventName() {
+  const e = cfg.eventName;
+  if (!e) return '';
+  if (typeof e === 'string') return e;
+  return String(e[getLang()] || e.en || '');
+}
+
+/** The "How to sort" scene shows the Honesty card in the page language. */
+function renderDemo() {
+  const v = byId.get('honesty') || values[0];
+  $('#demo-name').textContent = vName(v);
+  $('#demo-desc').textContent = vDesc(v);
+  $('#demo-chip').textContent = vName(v);
 }
 
 // ---------- Flow ----------
@@ -226,18 +223,24 @@ function go(step) {
 // ---------- 0. Start ----------
 
 function renderStart() {
-  bind('minutes', estimateMinutes(values.length));
-  bind('consent', CONSENT[cfg.idMode]);
-
+  renderStartText();
   const field = CODE_FIELD[cfg.idMode];
   $('#code-field').hidden = !field;
   if (field) {
-    bind('codeLabel', field.label);
-    bind('codeHint', field.hint);
     const input = $('#code');
     input.maxLength = field.maxLength;
     input.value = field.pattern.test(state.code) ? state.code : '';
     setCodeError('');
+  }
+}
+
+/** Start screen text only (a language change must not clear a code being typed). */
+function renderStartText() {
+  bind('minutes', estimateMinutes(values.length));
+  bind('consent', t(`consent.${cfg.idMode}`));
+  if (CODE_FIELD[cfg.idMode]) {
+    bind('codeLabel', t(`code.${cfg.idMode}.label`));
+    bind('codeHint', t(`code.${cfg.idMode}.hint`));
   }
 }
 
@@ -249,7 +252,7 @@ function wireStart() {
       const input = $('#code');
       const code = input.value.replace(/\s+/g, '').toUpperCase();
       input.value = code;
-      const msg = !code ? field.empty : field.pattern.test(code) ? '' : field.invalid;
+      const msg = !code ? t(`code.${cfg.idMode}.empty`) : field.pattern.test(code) ? '' : t(`code.${cfg.idMode}.invalid`);
       setCodeError(msg);
       if (msg) {
         input.focus();
@@ -292,14 +295,14 @@ function renderSort() {
   bar.setAttribute('aria-valuenow', state.index);
   $('#sort-progress-fill').style.width = `${(state.index / total) * 100}%`;
 
-  $('#card-name').textContent = card.name;
-  $('#card-desc').textContent = card.description;
+  $('#card-name').textContent = vName(card);
+  $('#card-desc').textContent = vDesc(card);
   const left = total - state.index;
   $('#sort-stage').dataset.left = left > 2 ? 'many' : left === 2 ? 'two' : 'one';
   const next = byId.get(state.order[state.index + 1]);
   $('#next-card').hidden = !next;
-  $('#next-name').textContent = next ? next.name : '';
-  $('#next-desc').textContent = next ? next.description : '';
+  $('#next-name').textContent = next ? vName(next) : '';
+  $('#next-desc').textContent = next ? vDesc(next) : '';
   $('#undo-btn').disabled = state.index === 0;
   renderPileCounts();
 }
@@ -309,7 +312,7 @@ function renderPileCounts() {
   for (const key of PILE_KEYS) {
     const n = state.piles[key].length;
     for (const node of $$(`[data-count="${key}"]`)) node.textContent = n;
-    $(`#pile-desc-${key}`).textContent = `${n} ${n === 1 ? 'value' : 'values'} in this pile so far`;
+    $(`#pile-desc-${key}`).textContent = tn('sort.pileDesc', n);
   }
 }
 
@@ -325,6 +328,7 @@ function wireSort() {
   document.addEventListener('keydown', (e) => {
     if (state.step !== 'sort' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     if (!$('#restart-confirm').hidden || $('#tutorial').open || document.body.classList.contains('is-dragging-card')) return;
+    if ($('#lang-btn').getAttribute('aria-expanded') === 'true') return;
     if (e.target instanceof Element && e.target.closest('input, select, textarea')) return;
     const pile = { 1: 'very', 2: 'important', 3: 'not' }[e.key];
     if (pile) {
@@ -427,7 +431,7 @@ function wireDrag() {
   const start = (e) => {
     if (settling) settling.finish(); // a previous small card is still settling: finish it now
     drag.active = true;
-    chip.textContent = byId.get(state.order[state.index]).name;
+    chip.textContent = vName(byId.get(state.order[state.index]));
     chip.hidden = false;
     drag.w = chip.offsetWidth;
     drag.h = chip.offsetHeight;
@@ -502,13 +506,20 @@ function undo() {
   renderSort();
   // On card 1 Undo is disabled again; don't leave keyboard focus on a dead button.
   if (state.index === 0 && undoHadFocus) $('#card-name').focus();
-  announceCard('Back to ');
+  announceCard(true);
 }
 
 /** Screen readers hear each new card: "Integrity: to be honest. Card 13 of 45." */
-function announceCard(prefix = '') {
+function announceCard(back = false) {
   const card = byId.get(state.order[state.index]);
-  announce(`${prefix}${card.name}: ${card.description}. Card ${state.index + 1} of ${state.order.length}.`);
+  announce(
+    t(back ? 'sort.announceBack' : 'sort.announce', {
+      name: vName(card),
+      desc: vDesc(card),
+      i: state.index + 1,
+      total: state.order.length,
+    })
+  );
 }
 
 /** After a tap or key, the sorted card flies into its pile button. Purely visual: the next card is already live underneath. */
@@ -557,7 +568,7 @@ function renderReviewLists() {
     $(`[data-list="${key}"]`).replaceChildren(
       ...(ids.length
         ? ids.map((id) => reviewRow(id, key))
-        : [el('li', { class: 'pile__empty', text: 'Nothing in this pile.' })])
+        : [el('li', { class: 'pile__empty', text: t('review.empty') })])
     );
   }
   renderPileCounts();
@@ -575,14 +586,14 @@ function reviewRow(id, pile) {
     el(
       'div',
       { class: 'value-row__text' },
-      el('span', { class: 'value-row__name', text: v.name }),
-      el('span', { class: 'value-row__desc', text: v.description })
+      el('span', { class: 'value-row__name', text: vName(v) }),
+      el('span', { class: 'value-row__desc', text: vDesc(v) })
     ),
     el(
       'select',
-      { class: 'move-select', 'data-id': id, 'aria-label': `Move ${v.name} to another pile` },
-      el('option', { value: '', selected: true, text: 'Move' }),
-      ...PILE_KEYS.filter((k) => k !== pile).map((k) => el('option', { value: k, text: `to ${PILES[k].label}` }))
+      { class: 'move-select', 'data-id': id, 'aria-label': t('review.moveLabel', { name: vName(v) }) },
+      el('option', { value: '', selected: true, text: t('review.move') }),
+      ...PILE_KEYS.filter((k) => k !== pile).map((k) => el('option', { value: k, text: t('review.moveTo', { pile: pileLabel(k) }) }))
     )
   );
 }
@@ -592,9 +603,9 @@ function reviewCheck() {
   const very = state.piles.very.length;
   const pool = very + state.piles.important.length;
   if (pool < cfg.topN) {
-    return { ok: false, note: `Move at least ${cfg.topN} values into Very important or Important to continue.` };
+    return { ok: false, note: t('review.needMore', { topN: cfg.topN }) };
   }
-  if (very < cfg.topN) return { ok: true, note: "You'll also choose from your Important pile." };
+  if (very < cfg.topN) return { ok: true, note: t('review.alsoImportant') };
   return { ok: true, note: '' };
 }
 
@@ -634,7 +645,7 @@ function moveValue(id, to) {
   // The row has left this pile: keep focus where it was, on the row that took its place.
   const rest = $$(`[data-list="${from}"] .move-select`);
   (rest[Math.min(rowIndex, rest.length - 1)] || $(`details[data-pile="${from}"] summary`)).focus();
-  announce(`${byId.get(id).name} moved to ${PILES[to].label}.`);
+  announce(t('review.moved', { name: vName(byId.get(id)), pile: pileLabel(to) }));
 }
 
 // ---------- 3. Choose top N ----------
@@ -666,7 +677,7 @@ function chooseGroup({ key, ids }) {
     el(
       'legend',
       { class: 'choose-group__legend' },
-      el('span', { class: `pile-chip pile-chip--${key}` }, icon(PILES[key].icon), PILES[key].label)
+      el('span', { class: `pile-chip pile-chip--${key}` }, icon(PILES[key].icon), pileLabel(key))
     ),
     el('div', { class: 'choose-group__rows' }, ...ids.map(checkRow))
   );
@@ -683,17 +694,17 @@ function checkRow(id) {
     el(
       'span',
       { class: 'check-row__text' },
-      el('span', { class: 'check-row__name', text: v.name }),
-      el('span', { class: 'check-row__desc', text: v.description })
+      el('span', { class: 'check-row__name', text: vName(v) }),
+      el('span', { class: 'check-row__desc', text: vDesc(v) })
     )
   );
 }
 
 function renderChooseStatus(warning = '') {
   const left = cfg.topN - state.top.length;
-  $('#choose-count').textContent = `${state.top.length} of ${cfg.topN} chosen`;
+  $('#choose-count').textContent = t('choose.count', { n: state.top.length, topN: cfg.topN });
   const note = $('#choose-note');
-  note.textContent = warning || (left > 0 ? `Choose ${left} more.` : 'Ready to continue.');
+  note.textContent = warning || (left > 0 ? t('choose.more', { n: left }) : t('choose.ready'));
   note.classList.toggle('is-warning', Boolean(warning));
   $('#choose-next').setAttribute('aria-disabled', String(left !== 0));
 }
@@ -704,7 +715,7 @@ function wireChoose() {
     if (!input.matches('input[type="checkbox"]')) return;
     if (input.checked && state.top.length >= cfg.topN) {
       input.checked = false; // extra picks are blocked, with a short message
-      renderChooseStatus(`You've already chosen ${cfg.topN}. Remove one to choose a different value.`);
+      renderChooseStatus(t('choose.tooMany', { topN: cfg.topN }));
       return;
     }
     state.top = input.checked ? [...state.top, input.value] : state.top.filter((id) => id !== input.value);
@@ -716,7 +727,7 @@ function wireChoose() {
   $('#choose-next').addEventListener('click', () => {
     const left = cfg.topN - state.top.length;
     if (left !== 0) {
-      renderChooseStatus(`Choose ${left} more to continue.`);
+      renderChooseStatus(t('choose.moreToGo', { n: left }));
       return;
     }
     // Keep the order already given to values that are still chosen; new ones go last.
@@ -734,11 +745,11 @@ function renderRank() {
   const last = state.ranked.length - 1;
   $('#rank-list').replaceChildren(
     ...state.ranked.map((id, i) => {
-      const name = byId.get(id).name;
+      const name = vName(byId.get(id));
       const move = (dir, label, disabled) =>
         el(
           'button',
-          { type: 'button', class: 'icon-btn', 'data-move': dir, 'aria-label': `Move ${name} ${label}`, disabled },
+          { type: 'button', class: 'icon-btn', 'data-move': dir, 'aria-label': t(`rank.${label}`, { name }), disabled },
           icon(dir)
         );
       return el(
@@ -775,7 +786,7 @@ function moveRank(id, dir) {
   const same = $(`[data-move="${dir}"]`, row);
   (same.disabled ? $(`[data-move="${dir === 'up' ? 'down' : 'up'}"]`, row) : same).focus();
   replay(row, 'is-moved');
-  announce(`${byId.get(id).name} is now number ${to + 1} of ${state.ranked.length}.`);
+  announce(t('rank.now', { name: vName(byId.get(id)), pos: to + 1, total: state.ranked.length }));
 }
 
 // ---------- 5. Results ----------
@@ -795,8 +806,8 @@ function renderResults() {
         el(
           'span',
           { class: 'top-item__text' },
-          el('span', { class: 'top-item__name', text: v.name }),
-          el('span', { class: 'top-item__desc', text: v.description })
+          el('span', { class: 'top-item__name', text: vName(v) }),
+          el('span', { class: 'top-item__desc', text: vDesc(v) })
         )
       );
     })
@@ -804,7 +815,7 @@ function renderResults() {
 
   const very = byName(state.piles.very);
   $('#very-all').hidden = !very.length;
-  $('#very-list').replaceChildren(...very.map((id) => el('li', { class: 'chip', text: byId.get(id).name })));
+  $('#very-list').replaceChildren(...very.map((id) => el('li', { class: 'chip', text: vName(byId.get(id)) })));
 
   queueResult();
   renderSaveStatus();
@@ -815,9 +826,12 @@ function renderResults() {
 const joinId = () => `join:${state.deviceId}`;
 const resultId = () => `result:${state.submissionId}`;
 
-/** The row for the Results tab (docs/PLAN.md §5). Value names, not ids, so the Sheet reads on its own. */
+/**
+ * The row for the Results tab (docs/PLAN.md §5). Value names, not ids, so the Sheet reads on its own.
+ * Always the English names, whatever language the page is in, so all answers count together.
+ */
 function resultBody() {
-  const names = (ids) => byName(ids).map((id) => byId.get(id).name);
+  const names = (ids) => ids.map((id) => byId.get(id).name).sort((a, b) => a.localeCompare(b, 'en'));
   return {
     type: 'result',
     submission_id: state.submissionId,
@@ -857,21 +871,23 @@ function renderSaveStatus() {
 /** "local" | "saving" | "saved" | "pending" */
 function setSaveStatus(kind) {
   $('#save-status').dataset.state = kind;
-  setText($('#save-status-text'), SAVE_STATUS[kind].text);
-  $('#save-status-use').setAttribute('href', `#i-${SAVE_STATUS[kind].icon}`);
+  setText($('#save-status-text'), t(`save.${kind}`));
+  $('#save-status-use').setAttribute('href', `#i-${SAVE_ICONS[kind]}`);
   $('#save-retry').hidden = kind !== 'pending';
 }
 
 // ---------- Start over / Start again ----------
 
-function renderRestart() {
-  const words = state.step === 'results' ? 'Start again' : 'Start over';
+function renderRestart({ keepOpen = false } = {}) {
+  const which = state.step === 'results' ? 'again' : 'over';
   $('#restart').hidden = state.step === 'start';
-  $('#restart-btn').hidden = false;
-  $('#restart-confirm').hidden = true;
-  $('#restart-btn').textContent = words;
-  $('#restart-q').textContent = `${words}? This clears your answers on this phone.`;
-  $('#restart-yes').textContent = `Yes, ${words.toLowerCase()}`;
+  if (!keepOpen) {
+    $('#restart-btn').hidden = false;
+    $('#restart-confirm').hidden = true;
+  }
+  $('#restart-btn').textContent = t(`restart.${which}`);
+  $('#restart-q').textContent = t(`restart.${which}Q`);
+  $('#restart-yes').textContent = t(`restart.${which}Yes`);
 }
 
 function wireRestart() {
@@ -891,7 +907,7 @@ function wireRestart() {
     state = resetState(state, cfg); // keeps the device ID, so the Joined counter doesn't count twice
     $('#start-lost').hidden = true;
     go('start');
-    announce('Your answers on this phone were cleared.');
+    announce(t('restart.cleared'));
   });
 }
 
@@ -939,25 +955,145 @@ function wireTutorial() {
 }
 
 /** Header right side: the step indicator while sorting (Sort–Rank), the "Official site" button on Start and Results. */
-function renderStepper(name) {
-  const keys = Object.keys(STEP_NAMES);
-  const n = keys.indexOf(name) + 1;
+function renderStepper(name, { flow = true } = {}) {
+  const n = STEP_KEYS.indexOf(name) + 1;
   $('#official-link').hidden = name !== 'start' && name !== 'results';
   $('#stepper').hidden = n === 0 || name === 'results';
-  replay($('.topbar'), 'is-flowing'); // the stripe under the header flows briefly on each new screen
+  if (flow) replay($('.topbar'), 'is-flowing'); // the stripe under the header flows briefly on each new screen
   if (!n) return;
-  $('#stepper-n').textContent = n;
-  $('#stepper-name').textContent = STEP_NAMES[name];
+  const stepName = el('span', { id: 'stepper-name', text: t(`step.${name}`) });
+  $('#stepper-text').replaceChildren(...parts('stepper', { n, name: stepName }));
   $$('.stepper__bar i').forEach((seg, i) => seg.classList.toggle('is-done', i < n));
 }
 
-function showError(msg) {
-  $('#error-msg').textContent = msg;
+let errorKey = '';
+function showError(key) {
+  errorKey = key;
+  $('#error-msg').textContent = t(key);
   show('error');
 }
 
+/** Sets a value shown on the page: [data-bind] elements, and {name} in translated text. */
 function bind(name, value) {
+  vars[name] = value;
   for (const node of $$(`[data-bind="${name}"]`)) node.textContent = String(value);
+  applyText(vars);
+}
+
+// ---------- Language (flag button in the header) ----------
+
+function wireLang() {
+  const langs = getLanguages();
+  const box = $('#lang');
+  box.hidden = langs.length < 2;
+  if (box.hidden) return;
+
+  const btn = $('#lang-btn');
+  const menu = $('#lang-menu');
+  menu.replaceChildren(
+    ...langs.map((code) =>
+      el(
+        'li',
+        {},
+        el(
+          'button',
+          { type: 'button', class: 'lang__opt', 'data-lang': code, lang: code },
+          flag(code),
+          el('span', { class: 'lang__name', text: LANG_NAMES[code] || code }),
+          icon('check')
+        )
+      )
+    )
+  );
+
+  const isOpen = () => btn.getAttribute('aria-expanded') === 'true';
+  const open = () => {
+    btn.setAttribute('aria-expanded', 'true');
+    menu.hidden = false;
+    $(`.lang__opt[data-lang="${getLang()}"]`, menu).focus();
+  };
+  const close = ({ focus = true } = {}) => {
+    if (!isOpen()) return;
+    btn.setAttribute('aria-expanded', 'false');
+    menu.hidden = true;
+    if (focus) btn.focus();
+  };
+
+  btn.addEventListener('click', () => (isOpen() ? close() : open()));
+  menu.addEventListener('click', (e) => {
+    const opt = e.target.closest('[data-lang]');
+    if (!opt) return;
+    setLang(opt.dataset.lang);
+    close();
+  });
+  // Escape closes; arrow keys move between languages
+  box.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && isOpen()) {
+      e.preventDefault();
+      e.stopPropagation();
+      close();
+      return;
+    }
+    if ((e.key === 'ArrowDown' || e.key === 'ArrowUp') && isOpen()) {
+      e.preventDefault();
+      const opts = $$('.lang__opt', menu);
+      const i = opts.indexOf(document.activeElement);
+      opts[(i + (e.key === 'ArrowDown' ? 1 : -1) + opts.length) % opts.length].focus();
+    }
+  });
+  // Clicking or tabbing anywhere else closes it
+  document.addEventListener('pointerdown', (e) => {
+    if (!box.contains(e.target)) close({ focus: false });
+  });
+  box.addEventListener('focusout', (e) => {
+    if (e.relatedTarget && !box.contains(e.relatedTarget)) close({ focus: false });
+  });
+
+  renderLangButton();
+  onLangChange(relabel);
+}
+
+function renderLangButton() {
+  const code = getLang();
+  $('#lang-btn-flag').setAttribute('href', `#flag-${code}`);
+  $('#lang-btn-text').textContent = t('langButton', { name: LANG_NAMES[code] || code });
+  for (const opt of $$('.lang__opt')) {
+    if (opt.dataset.lang === code) opt.setAttribute('aria-current', 'true');
+    else opt.removeAttribute('aria-current');
+  }
+}
+
+/** After a language change: redo every text on the page, keeping the person's place and focus. */
+function relabel() {
+  applyText(vars);
+  renderLangButton();
+  if (!state) {
+    if (errorKey) $('#error-msg').textContent = t(errorKey);
+    return;
+  }
+  bindStatic();
+  relabelNewsletter();
+  const step = state.step;
+  if (step === 'start') renderStartText();
+  else if (step === 'sort') renderSort();
+  else if (step === 'review') renderReviewLists();
+  else if (step === 'choose') renderChoose();
+  else if (step === 'rank') renderRank();
+  else if (step === 'results') renderResults();
+  renderRestart({ keepOpen: true });
+  renderStepper(step, { flow: false });
+  if (errorKey) $('#error-msg').textContent = t(errorKey);
+}
+
+function flag(code) {
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  svg.setAttribute('class', 'flag');
+  svg.setAttribute('aria-hidden', 'true');
+  svg.setAttribute('focusable', 'false');
+  const use = document.createElementNS(SVG_NS, 'use');
+  use.setAttribute('href', `#flag-${code}`);
+  svg.append(use);
+  return svg;
 }
 
 /** Only touch the text when it changes, so live regions don't repeat themselves. */
@@ -981,8 +1117,10 @@ function replay(node, cls) {
   node.classList.add(cls);
 }
 
+/** Ids sorted by the name shown, in the page language. */
 function byName(ids) {
-  return [...ids].sort((a, b) => byId.get(a).name.localeCompare(byId.get(b).name));
+  const lang = getLang();
+  return [...ids].sort((a, b) => vName(byId.get(a)).localeCompare(vName(byId.get(b)), lang));
 }
 
 function shuffle(list) {
@@ -1018,9 +1156,10 @@ function icon(name) {
   return svg;
 }
 
-function userError(devMessage, userMessage) {
+/** An error with a message for the participant (an i18n.js key). */
+function userError(devMessage, userKey) {
   const err = new Error(devMessage);
-  err.userMessage = userMessage;
+  err.userKey = userKey;
   return err;
 }
 

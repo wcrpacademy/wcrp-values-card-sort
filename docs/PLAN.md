@@ -84,7 +84,8 @@ Doc Lau can't decide yet, so every open choice is a setting. Change one line, re
 
 ```js
 window.CARD_SORT_CONFIG = {
-  eventName: "Leadership Workshop, Cape Town",
+  eventName: { en: "Leadership Workshop, Cape Town", fr: "Atelier sur le leadership, Le Cap" }, // or one string
+  languages: ["en", "fr"],    // participant page languages; ["en"] hides the flag menu
   idMode: "anonymous",        // "anonymous" | "self" | "badge"
   topN: 5,                    // 5 or 10
   valuesList: "trimmed",      // "full" (83) | "trimmed" (from values.json "trimmed": true)
@@ -103,8 +104,17 @@ window.CARD_SORT_CONFIG = {
 | `idMode: "badge"` | | "Enter the code on your badge." Use only if badge codes are also used in the pre/post survey, so results can be linked. Then apply the survey rules (pseudonyms, groups under 5 hidden). |
 | `topN` | 5 / 10 | How many top values they pick and rank. |
 | `valuesList` | full / trimmed | 83 cards or the shorter list. |
+| `languages` | `["en", "fr"]` / `["en"]` | A flag menu in the header switches the participant page between English and French. It starts in the phone's language and remembers the choice. |
 
 The start screen's consent line changes with `idMode`, so it always says honestly what is stored.
+
+## 5d. French (added 17 Nov, Ken)
+
+- The participant page (every screen, the value cards and the newsletter form) is in English and French. Texts live in `js/i18n.js`; the French value names and descriptions are in `values.json` (`"fr"` on each value).
+- Language only changes what is shown. Results are always sent with the **English** value names, so the Sheet, the live chart and the admin counts add French and English answers together. No language field is stored.
+- Newsletter choices (country, language, role, topics) show in French but send the same English text as the wcrp-academy.org form.
+- The projector (`live.html`) and the admin view stay in English.
+- The French value translations are our own (the card sort has no official French version we use); have a French speaker check them before the day.
 
 ## 5b. Live view on the projector (`live.html`)
 
