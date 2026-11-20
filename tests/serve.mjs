@@ -2,7 +2,7 @@
 // server. The mock runs the REAL apps-script/apps-script.gs in a sandbox, with an in-memory "Database"
 // Sheet and a fake MailerLite, so the page talks to exactly the code that will run on Google.
 //
-//   node tests/serve.mjs [port]      → http://127.0.0.1:4173/   (live.html, admin.html too)
+//   node tests/serve.mjs [port]      → http://127.0.0.1:4180/   (live.html, admin.html too)
 //
 // Test-only routes: GET /__test/state, POST /__test/reset, POST /__test/seed?n=6, POST /__test/outage?on=1
 // The admin PIN in this server is 1234 (or TEST_PIN). Nothing here touches Google or MailerLite.
@@ -15,7 +15,7 @@ import { fileURLToPath } from 'node:url';
 import vm from 'node:vm';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PORT = Number(process.argv[2] || process.env.PORT || 4173);
+const PORT = Number(process.argv[2] || process.env.PORT || 4180);
 const PIN = process.env.TEST_PIN || '1234';
 
 // Same files the deploy uploads. Everything else (.env, docs, tests, scripts…) is a 404.

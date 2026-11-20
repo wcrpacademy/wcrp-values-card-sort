@@ -63,6 +63,15 @@ test.describe('live view', () => {
 });
 
 test.describe('admin view', () => {
+  test('the header logo links home: from the organiser page to the card sort, in English and French', async ({ page }) => {
+    await page.goto('/admin.html');
+    await page.getByRole('link', { name: 'WCRP Academy values card sort: home' }).click();
+    await expect(page.getByRole('heading', { level: 1, name: 'What matters most to you?' })).toBeVisible();
+    await page.getByRole('button', { name: /^Language/ }).click();
+    await page.getByRole('link', { name: /Français/ }).or(page.getByRole('button', { name: /Français/ })).first().click();
+    await expect(page.getByRole('link', { name: /WCRP Academy : accueil$/ })).toHaveAttribute('href', './');
+  });
+
   test('"Reset this phone" lets a finished phone take part again', async ({ page }) => {
     await jumpTo(page, 'rank');
     await page.getByRole('button', { name: 'See my results' }).click();

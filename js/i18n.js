@@ -18,6 +18,7 @@ const STRINGS = {
     langGroup: 'Language',
     langButton: 'Language: {name}',
 
+    'brand.home': 'WCRP Academy values card sort: home',
     'start.title': 'What matters most to you?',
     'start.meta': '{cardTotal} values · about {minutes} minutes',
     'start.step1': 'Sort each value into one of three piles.',
@@ -190,6 +191,7 @@ const STRINGS = {
     langGroup: 'Langue',
     langButton: 'Langue : {name}',
 
+    'brand.home': 'Tri des valeurs de la WCRP Academy : accueil',
     'start.title': 'Qu’est-ce qui compte le plus pour vous ?',
     'start.meta': '{cardTotal} valeurs · environ {minutes} minutes',
     'start.step1': 'Placez chaque valeur dans l’une des trois piles.',

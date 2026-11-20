@@ -13,7 +13,7 @@ Plans: [docs/PLAN.md](docs/PLAN.md) · [docs/FRONTEND_PLAN.md](docs/FRONTEND_PLA
 | Command | What it does |
 |---|---|
 | `npm ci` | Install the dev tools (Playwright, qrcode). Nothing from `node_modules` is ever deployed. |
-| `npm run preview` | The site on http://127.0.0.1:4173 with a **mock** Apps Script (real `apps-script.gs`, in-memory Sheet, fake MailerLite). Admin PIN there: `1234`. |
+| `npm run preview` | The site on http://127.0.0.1:4180 with a **mock** Apps Script (real `apps-script.gs`, in-memory Sheet, fake MailerLite). Admin PIN there: `1234`. |
 | `npm test` | Playwright tests against the preview server, at 375 / 768 / 1280 px (uses your installed Chrome). |
 | `npm run qr` | QR codes for `https://<onlineHost>/` into `qr/` (SVG for the projector, PNG for slides and cards). |
 | `npm run pin` | Prints the hash of an organiser PIN for `adminPinHash` in `config.js`. |

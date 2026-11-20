@@ -213,7 +213,7 @@ h1, h2, h3, p { margin: 0; }
 }
 .lang__opt[aria-current="true"] { background: var(--blue-tint); }
 .lang__opt[aria-current="true"] .icon { visibility: visible; }
-.brand { display: inline-flex; flex: none; }
+.brand { display: inline-flex; flex: none; border-radius: 4px; } /* a link home (the card sort start) */
 /* Full logo, light version (mark + white "WCRP Academy"), 554 × 200 */
 .brand__logo {
   display: block;

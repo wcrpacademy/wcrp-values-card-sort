@@ -2,7 +2,7 @@
 // Locally it uses the installed Google Chrome (no browser download); in CI the workflow installs Chromium.
 import { defineConfig } from '@playwright/test';
 
-const PORT = 4173;
+const PORT = 4180; // not 4173: the Wheel of Power repo uses that, and Playwright would reuse its server
 const phone = { viewport: { width: 375, height: 667 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 };
 
 export default defineConfig({

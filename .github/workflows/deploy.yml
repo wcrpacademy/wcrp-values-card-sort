@@ -98,7 +98,7 @@ jobs:
         if: steps.secrets.outputs.ready == 'true'
         run: |
           mkdir dist
-          cp index.html live.html admin.html config.js values.json dist/
+          cp index.html live.html admin.html config.js values.json robots.txt dist/
           cp -r css js fonts img qr dist/
           find dist -name '.*' -print -delete
           echo "Uploading:" && find dist -type f | sort
